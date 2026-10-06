@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>DuoTab - 極簡雙人記帳</title>
+  
+  <!-- Apple Web App Meta Tags (PWA) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DuoTab">
+  <meta name="theme-color" content="#0f1015">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236366f1'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>💬</text></svg>">
+
+  <style>
+    :root {
+      --bg: #0f1015;
+      --card-bg: #1a1b23;
+      --card-subtle: #242632;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --green: #10b981;
+      --orange: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #2e303e;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top, 20px);
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      padding: 12px 16px;
+    }
+
+    /* Top App Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .tab-badge {
+      background: var(--card-subtle);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* Vibe Balance Card */
+    .balance-card {
+      background: linear-gradient(145deg, #1e1f2b 0%, #151620 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .balance-card::before {
+      content: "";
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 90px;
+      height: 90px;
+      background: var(--accent);
+      opacity: 0.12;
+      filter: blur(25px);
+      border-radius: 50%;
+    }
+
+    .balance-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .balance-title {
+      font-size: 21px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .status-pos { color: var(--green); }
+    .status-neg { color: var(--orange); }
+    .status-zero { color: var(--text-muted); }
+
+    .settle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-subtle);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .settle-btn:active {
+      transform: scale(0.96);
+      background: var(--border);
+    }
+
+    /* Activity Stream */
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .activity-list {
+      flex: 1;
+      min-height: 110px;
+      max-height: 160px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 14px;
+    }
+
+    .item-icon {
+      font-size: 18px;
+      width: 36px;
+      height: 36px;
+      background: var(--card-subtle);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+    }
+
+    .item-details {
+      flex: 1;
+    }
+
+    .item-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .item-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .item-amount {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .del-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 13px;
+      margin-left: 10px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    /* Payer Selector */
+    .payer-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 4px;
+      border-radius: 14px;
+      margin-bottom: 10px;
+    }
+
+    .payer-tab {
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .payer-tab.active {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+    }
+
+    /* Numpad Section */
+    .numpad-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 12px;
+      margin-top: auto;
+    }
+
+    .amount-display {
+      font-size: 34px;
+      font-weight: 800;
+      text-align: right;
+      padding: 4px 14px 10px 14px;
+      color: var(--text-main);
+      font-feature-settings: "tnum";
+      letter-spacing: -0.5px;
+    }
+
+    .numpad-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .key {
+      background: var(--card-subtle);
+      border: 1px solid transparent;
+      color: var(--text-main);
+      font-size: 20px;
+      font-weight: 600;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+
+    .key:active {
+      transform: scale(0.94);
+      background: var(--border);
+    }
+
+    .key.cat {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: var(--accent-light);
+      font-size: 11px;
+      font-weight: 700;
+      gap: 2px;
+    }
+
+    .key.cat .emoji {
+      font-size: 16px;
+    }
+
+    .key.cat:active {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Modal / Toast */
+    .toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50px);
+      background: rgba(30, 41, 59, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <span>DuoTab</span>
+      <span>💬</span>
+    </div>
+    <div class="tab-badge">🇭🇰 HKD • 雙人共享</div>
+  </header>
+
+  <!-- Vibe Balance Card -->
+  <div class="balance-card">
+    <div class="balance-label">✦ VIBE BALANCE 差額結算</div>
+    <div class="balance-title" id="balanceText">雙方已清帳 ✨</div>
+    <button class="settle-btn" onclick="copySettleInfo()">
+      <span>🔗</span>
+      <span id="settleBtnText">複製請款/還款備忘 (FPS/PayMe)</span>
+    </button>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="section-title">
+    <span>近期開銷</span>
+    <span id="countText" style="font-size: 11px; color: var(--text-muted);">0 筆記錄</span>
+  </div>
+  
+  <div class="activity-list" id="activityList">
+    <!-- Dynamic item list -->
+  </div>
+
+  <!-- Payer Selector -->
+  <div class="payer-toggle">
+    <div class="payer-tab active" id="tabMe" onclick="setPayer('me')">由我付款 (You)</div>
+    <div class="payer-tab" id="tabPartner" onclick="setPayer('partner')">由對方付款 (Partner)</div>
+  </div>
+
+  <!-- Numpad & Quick Logger -->
+  <div class="numpad-box">
+    <div class="amount-display" id="amountVal">HK$ 0</div>
+
+    <div class="numpad-grid">
+      <button class="key" onclick="pressNum('1')">1</button>
+      <button class="key" onclick="pressNum('2')">2</button>
+      <button class="key" onclick="pressNum('3')">3</button>
+      <button class="key cat" onclick="addExpense('晚餐 🍜', '🍜')">
+        <span class="emoji">🍜</span><span>晚餐</span>
+      </button>
+
+      <button class="key" onclick="pressNum('4')">4</button>
+      <button class="key" onclick="pressNum('5')">5</button>
+      <button class="key" onclick="pressNum('6')">6</button>
+      <button class="key cat" onclick="addExpense('手搖 ☕', '☕')">
+        <span class="emoji">☕</span><span>飲品</span>
+      </button>
+
+      <button class="key" onclick="pressNum('7')">7</button>
+      <button class="key" onclick="pressNum('8')">8</button>
+      <button class="key" onclick="pressNum('9')">9</button>
+      <button class="key cat" onclick="addExpense('超市 🛒', '🛒')">
+        <span class="emoji">🛒</span><span>買餸</span>
+      </button>
+
+      <button class="key" onclick="pressDot()">.</button>
+      <button class="key" onclick="pressNum('0')">0</button>
+      <button class="key" onclick="pressBack()">⌫</button>
+      <button class="key cat" onclick="addExpense('娛樂 🍿', '🍿')">
+        <span class="emoji">🍿</span><span>娛樂</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">提示訊息</div>
+
+<script>
+  let currentAmount = "";
+  let currentPayer = "me";
+  let expenses = JSON.parse(localStorage.getItem('duotab_expenses') || '[]');
+
+  function triggerHaptic() {
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  function pressNum(digit) {
+    triggerHaptic();
+    if (currentAmount === "0") currentAmount = digit;
+    else if (currentAmount.length < 8) currentAmount += digit;
+    updateDisplay();
+  }
+
+  function pressDot() {
+    triggerHaptic();
+    if (!currentAmount.includes('.')) {
+      currentAmount = (currentAmount === "" ? "0" : currentAmount) + ".";
+      updateDisplay();
+    }
+  }
+
+  function pressBack() {
+    triggerHaptic();
+    if (currentAmount.length > 0) {
+      currentAmount = currentAmount.slice(0, -1);
+      updateDisplay();
+    }
+  }
+
+  function updateDisplay() {
+    const el = document.getElementById('amountVal');
+    el.innerText = 'HK$ ' + (currentAmount === "" ? "0" : currentAmount);
+  }
+
+  function setPayer(payer) {
+    triggerHaptic();
+    currentPayer = payer;
+    document.getElementById('tabMe').classList.toggle('active', payer === 'me');
+    document.getElementById('tabPartner').classList.toggle('active', payer === 'partner');
+  }
+
+  function addExpense(catName, icon) {
+    const val = parseFloat(currentAmount);
+    if (!val || val <= 0) {
+      showToast('請先輸入金額 💸');
+      return;
+    }
+    triggerHaptic();
+
+    const item = {
+      id: Date.now(),
+      category: catName,
+      icon: icon,
+      amount: val,
+      payer: currentPayer,
+      date: new Date().toLocaleDateString('zh-HK', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    expenses.unshift(item);
+    localStorage.setItem('duotab_expenses', JSON.stringify(expenses));
+    currentAmount = "";
+    updateDisplay();
+    render();
+    showToast('已記錄：HK$ ' + val + ' ✨');
+  }
+
+  function deleteExpense(id) {
+    expenses = expenses.filter(e => e.id !== id);
+    localStorage.setItem('duotab_expenses', JSON.stringify(expenses));
+    render();
+  }
+
+  function render() {
+    let net = 0;
+    expenses.forEach(e => {
+      const half = e.amount / 2.0;
+      if (e.payer === 'me') net += half;
+      else net -= half;
+    });
+
+    const bText = document.getElementById('balanceText');
+    const sBtnText = document.getElementById('settleBtnText');
+
+    if (Math.abs(net) < 0.5) {
+      bText.innerText = "雙方已清帳 ✨";
+      bText.className = "balance-title status-zero";
+      sBtnText.innerText = "目前無差額";
+    } else if (net > 0) {
+      bText.innerText = "對方需轉給你 HK$ " + net.toFixed(1);
+      bText.className = "balance-title status-pos";
+      sBtnText.innerText = "複製請款單 (PayMe / FPS)";
+    } else {
+      bText.innerText = "你需要轉給對方 HK$ " + Math.abs(net).toFixed(1);
+      bText.className = "balance-title status-neg";
+      sBtnText.innerText = "複製還款備忘 (PayMe / FPS)";
+    }
+
+    const list = document.getElementById('activityList');
+    list.innerHTML = '';
+    document.getElementById('countText').innerText = expenses.length + ' 筆記錄';
+
+    if (expenses.length === 0) {
+      list.innerHTML = '<div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 13px;">還沒有記帳記錄<br>在下方輸入金額並點選類別即可完成！</div>';
+      return;
+    }
+
+    expenses.slice(0, 10).forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'activity-item';
+      div.innerHTML = `
+        <div class="item-icon">${e.icon}</div>
+        <div class="item-details">
+          <div class="item-name">${e.category}</div>
+          <div class="item-sub">${e.date} • ${e.payer === 'me' ? '由我付款' : '由對方付款'}</div>
+        </div>
+        <div class="item-amount">-HK$ ${e.amount.toFixed(1)}</div>
+        <button class="del-btn" onclick="deleteExpense(${e.id})">✕</button>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function copySettleInfo() {
+    triggerHaptic();
+    let net = 0;
+    expenses.forEach(e => {
+      const half = e.amount / 2.0;
+      if (e.payer === 'me') net += half;
+      else net -= half;
+    });
+
+    let msg = "";
+    if (Math.abs(net) < 0.5) {
+      msg = "【DuoTab 記帳結算】目前我們雙方差額為 0，已結清 ✨";
+    } else if (net > 0) {
+      msg = "【DuoTab 請款】目前共同開銷已核算，你轉給我 HK$ " + net.toFixed(1) + " 就可以囉！(支援 PayMe / FPS)";
+    } else {
+      msg = "【DuoTab 備忘】我需要轉給你 HK$ " + Math.abs(net).toFixed(1) + "，稍後用 PayMe / 轉數快轉給你！";
+    }
+
+    navigator.clipboard.writeText(msg).then(() => {
+      showToast('已複製結算備忘！可直接傳給另一半 📲');
+    }).catch(() => {
+      showToast('複製失敗，請手動截圖');
+    });
+  }
+
+  render();
+</script>
+
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
