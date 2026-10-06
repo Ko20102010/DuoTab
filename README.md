@@ -1,4 +1,38 @@
-DuoTab 💬💸The 3-second shared expense tracker for Gen Z couples & close friends.Minimalist. Privacy-first. Zero awkward money talks. Powered by Apple CloudKit.🌟 Why DuoTab?Traditional expense trackers are either clunky accounting ledgers designed for CPAs or bloated group splitters filled with 10-second countdown ads.DuoTab is purpose-built for how modern couples and Gen Z roommates actually handle money:⚡ 3-Second Entry: Open the app $\rightarrow$ Numpad is already up $\rightarrow$ Tap category $\rightarrow$ Done.🧘 Soft Splitting & Treat Swap: No petty 50/50 bean-counting. Track shared tabs, balance offsets (e.g., "I got the boba, you grab dinner"), and settle up whenever it feels right.🔒 Zero Accounts, Pure Privacy: No email signups, no bank logins, no central server database. Data syncs directly via personal Apple iCloud accounts using CloudKit.🖤 Gen Z Aesthetic: Bento-grid UI, buttery haptic feedback, dark mode by default, and zero corporate stiffness.🎯 Gen Z-Specific Product DesignGen Z Pain PointDuoTab Solution"Talking about money feels awkward and calculative"Vibe Balance Indicator: Replaces harsh "You owe $X" with soft visual indicators (e.g., "Alex is ahead by HK$120 — Taylor gets next meal")."Apps require too many taps just to log a coffee"Instant Numpad & Widget: The keyboard is pinned to the home screen. A lock-screen widget allows 1-tap logging."Tired of ads and high subscriptions"No Ad Model: Zero banner or popup ads. Free tier is genuinely usable."I hate signing up with personal phone/email"iMessage 1-Click Invite: Invite your partner via standard Apple CloudKit share link."We are saving for specific moments, not generic net worth"Shared Vaults: Dedicated mini-ledgers for "Tokyo Trip 🇯🇵", "Concert Weekend 🎟️", or "Apartment Upgrade 🛋️"."Local payment settlement"One-Tap Payment Link: Instant copy of FPS (轉數快) / PayMe / Venmo handle for frictionless repayment.📱 Core User Experience (MVP)┌──────────────────────────────────────┐
+# DuoTab 💬💸
+
+> **The 3-second shared expense tracker for Gen Z couples & close friends.**
+>
+> Minimalist. Privacy-first. Zero awkward money talks. Powered by Apple CloudKit.
+
+## 🌟 Why DuoTab?
+
+Traditional expense trackers are either **clunky accounting ledgers** designed for CPAs or **bloated group splitters** filled with 10-second countdown ads.
+
+**DuoTab** is purpose-built for how modern couples and Gen Z roommates actually handle money:
+
+* ⚡ **3-Second Entry**: Open the app $\rightarrow$ Numpad is already up $\rightarrow$ Tap category $\rightarrow$ Done.
+
+* 🧘 **Soft Splitting & Treat Swap**: No petty 50/50 bean-counting. Track shared tabs, balance offsets (e.g., *"I got the boba, you grab dinner"*), and settle up whenever it feels right.
+
+* 🔒 **Zero Accounts, Pure Privacy**: No email signups, no bank logins, no central server database. Data syncs directly via personal Apple iCloud accounts using **CloudKit**.
+
+* 🖤 **Gen Z Aesthetic**: Bento-grid UI, buttery haptic feedback, dark mode by default, and zero corporate stiffness.
+
+## 🎯 Gen Z-Specific Product Design
+
+| Gen Z Pain Point | DuoTab Solution | 
+| ----- | ----- | 
+| **"Talking about money feels awkward and calculative"** | **Vibe Balance Indicator**: Replaces harsh *"You owe \$X"* with soft visual indicators (e.g., *"Alex is ahead by HK\$120 — Taylor gets next meal"*). | 
+| **"Apps require too many taps just to log a coffee"** | **Instant Numpad & Widget**: The keyboard is pinned to the home screen. A lock-screen widget allows 1-tap logging. | 
+| **"Tired of ads and high subscriptions"** | **No Ad Model**: Zero banner or popup ads. Free tier is genuinely usable. | 
+| **"I hate signing up with personal phone/email"** | **iMessage 1-Click Invite**: Invite your partner via standard Apple CloudKit share link. | 
+| **"We are saving for specific moments, not generic net worth"** | **Shared Vaults**: Dedicated mini-ledgers for *"Tokyo Trip 🇯🇵"*, *"Concert Weekend 🎟️"*, or *"Apartment Upgrade 🛋️"*. | 
+| **"Local payment settlement"** | **One-Tap Payment Link**: Instant copy of FPS (轉數快) / PayMe / Venmo handle for frictionless repayment. | 
+
+## 📱 Core User Experience (MVP)
+
+```
+┌──────────────────────────────────────┐
 │  DuoTab               [🇯🇵 Tokyo Tab] │
 ├──────────────────────────────────────┤
 │          VIBE BALANCE                │
@@ -23,7 +57,25 @@ DuoTab 💬💸The 3-second shared expense tracker for Gen Z couples & close fri
 │  └─────┴─────┴─────┴──────────────┘  │
 │    [Toggle: Paid by Me / Partner]    │
 └──────────────────────────────────────┘
-🛠 Tech StackLanguage: Swift 5.9+Framework: SwiftUI (iOS 17+)Local Persistence & Sync: SwiftData + Apple CloudKit (CKShare for collaborative zones)Haptics: UIImpactFeedbackGeneratorArchitecture: MVVM (Model-View-ViewModel)📂 Repository File StructureDuoTab/
+
+```
+
+## 🛠 Tech Stack
+
+* **Language:** Swift 5.9+
+
+* **Framework:** SwiftUI (iOS 17+)
+
+* **Local Persistence & Sync:** SwiftData + Apple CloudKit (`CKShare` for collaborative zones)
+
+* **Haptics:** `UIImpactFeedbackGenerator`
+
+* **Architecture:** MVVM (Model-View-ViewModel)
+
+## 📂 Repository File Structure
+
+```
+DuoTab/
 ├── README.md
 ├── LICENSE
 ├── DuoTab.xcodeproj
@@ -54,7 +106,15 @@ DuoTab 💬💸The 3-second shared expense tracker for Gen Z couples & close fri
     └── Services/
         ├── CloudKitSyncService.swift
         └── HapticService.swift
-💻 Core Codebase Blueprint (Ready to Build)1. Data Models (Models/Expense.swift)import Foundation
+
+```
+
+## 💻 Core Codebase Blueprint (Ready to Build)
+
+### 1. Data Models (`Models/Expense.swift`)
+
+```
+import Foundation
 import SwiftData
 
 enum SplitMode: String, Codable, CaseIterable {
@@ -116,7 +176,13 @@ final class Expense {
         self.notes = notes
     }
 }
-2. View Model & Soft Settlement Logic (ViewModels/LedgerViewModel.swift)import Foundation
+
+```
+
+### 2. View Model & Soft Settlement Logic (`ViewModels/LedgerViewModel.swift`)
+
+```
+import Foundation
 import SwiftUI
 
 @Observable
@@ -164,7 +230,13 @@ final class LedgerViewModel {
         HapticService.shared.success()
     }
 }
-3. SwiftUI Numpad & Quick Entry (Views/Components/NumpadView.swift)import SwiftUI
+
+```
+
+### 3. SwiftUI Numpad & Quick Entry (`Views/Components/NumpadView.swift`)
+
+```
+import SwiftUI
 
 struct NumpadView: View {
     @Binding var amountString: String
@@ -257,7 +329,44 @@ struct NumpadView: View {
         }
     }
 }
-💎 Monetization & Business ModelDuoTab runs on a "Dual-Pass Pro" model:Free Tier: 1 Shared Ledger, 100% ad-free, full iCloud real-time sync, basic monthly split summary.DuoTab Pro (HK$ 18/month, HK$ 98/year, or HK$ 128 Lifetime):Buy once, unlock for both: When one partner purchases Pro, the connected partner unlocks all Pro features automatically.Unlimited Shared Vaults (Travel, Move-in, Pets, Gifts).iOS Lock Screen & Desktop Interactive Widgets.Custom category creation & emoji customization.CSV/PDF Statement export.🚀 Getting StartedClone the repo:git clone https://github.com/your-username/DuoTab.git
-Open in Xcode:
-Open DuoTab.xcodeproj on a Mac running macOS Sonoma or later with Xcode 15+.Configure iCloud:
-In project settings under Signing & Capabilities, add the iCloud capability and check CloudKit.Run: Select your target iPhone or iOS Simulator and press Cmd + R.📄 LicenseReleased under the MIT License.
+
+```
+
+## 💎 Monetization & Business Model
+
+DuoTab runs on a **"Dual-Pass Pro"** model:
+
+* **Free Tier**: 1 Shared Ledger, 100% ad-free, full iCloud real-time sync, basic monthly split summary.
+
+* **DuoTab Pro** (HK\$ 18/month, HK$ 98/year, or HK$ 128 Lifetime):
+
+  * *Buy once, unlock for both*: When one partner purchases Pro, the connected partner unlocks all Pro features automatically.
+
+  * Unlimited Shared Vaults (Travel, Move-in, Pets, Gifts).
+
+  * iOS Lock Screen & Desktop Interactive Widgets.
+
+  * Custom category creation & emoji customization.
+
+  * CSV/PDF Statement export.
+
+## 🚀 Getting Started
+
+1. **Clone the repo:**
+
+   ```
+   git clone https://github.com/your-username/DuoTab.git
+   
+   ```
+
+2. **Open in Xcode:**
+   Open `DuoTab.xcodeproj` on a Mac running macOS Sonoma or later with Xcode 15+.
+
+3. **Configure iCloud:**
+   In project settings under `Signing & Capabilities`, add the `iCloud` capability and check `CloudKit`.
+
+4. **Run:** Select your target iPhone or iOS Simulator and press `Cmd + R`.
+
+## 📄 License
+
+Released under the [MIT License](LICENSE).
