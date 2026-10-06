@@ -503,13 +503,15 @@
         <span id="currentSheetName">家庭情侶</span>
         <span style="font-size: 10px; color: var(--text-muted);">▾</span>
       </button>
-      <button class="sync-status-btn" id="syncStatusBtn" onclick="openSyncModal()">
+      <button class="sync-status-btn" id="syncStatusBtn" onclick="openSyncModal()" title="雲端同步狀態">
         <span id="syncDot">☁️</span>
-        <span id="syncLabel">雲端未同步</span>
+        <span id="syncLabel" style="max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">未同步</span>
       </button>
     </div>
-    <div style="display:flex; align-items:center; gap:6px;"><span id="streakBadge" style="font-size:11px; font-weight:700; color:var(--orange); background:rgba(245,158,11,0.12); padding:3px 8px; border-radius:12px; border:1px solid rgba(245,158,11,0.3);">🔥 1天</span><button class="manage-btn" onclick="openRecurringModal()" title="週期自動化">📅</button>
-      <button class="manage-btn" onclick="openManageMembersModal()" title="成員管理">👥</button></div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <span id="streakBadge" style="font-size:11px; font-weight:700; color:var(--orange); background:rgba(245,158,11,0.12); padding:4px 8px; border-radius:12px; border:1px solid rgba(245,158,11,0.3);">🔥 1天</span>
+      <button class="manage-btn" onclick="openAdvancedHubModal()" title="報表與進階中心" style="background:var(--accent); color:white; width:34px; height:34px; border-radius:11px; box-shadow:0 2px 8px rgba(99,102,241,0.35);">📊</button>
+    </div>
   </header>
 
   <div class="view-switcher" id="coupleViewSwitcher">
@@ -588,7 +590,7 @@
       <div class="selector-lbl">誰付錢：</div>
       <div class="chips-scroll" id="payerScroll"></div>
     </div>
-    <div class="selector-row">
+    <div class="selector-row" id="participantSelectorRow">
       <div class="selector-lbl">誰分攤：</div>
       <div class="chips-scroll" id="participantScroll"></div>
     </div>
@@ -824,6 +826,144 @@
     <input type="hidden" id="promptRuleId" />
     <input type="number" step="1" class="new-sheet-input" id="promptActualAmount" style="font-size:22px; font-weight:800; color:var(--green);" />
     <button class="create-sheet-btn" onclick="confirmVariableSalary()">✓ 確認記入本月 PnL</button>
+  </div>
+</div>
+
+
+<!-- Modal 8: Advanced Hub & KPI Report Export Center -->
+<div class="modal-overlay" id="advancedHubModal">
+  <div class="modal-sheet" style="max-height:88vh; overflow-y:auto;">
+    <div class="modal-title">
+      <span>📊 報表與進階中心</span>
+      <span style="cursor:pointer;" onclick="closeModals()">✕</span>
+    </div>
+
+    <!-- Hub Tabs: KPI Report vs Advanced Management -->
+    <div class="view-switcher" style="margin-bottom:12px;">
+      <div class="view-tab active" id="hubTabKPI" onclick="switchHubTab('kpi')">📈 KPI 財務月報</div>
+      <div class="view-tab" id="hubTabTools" onclick="switchHubTab('tools')">⚙️ 進階收納工具</div>
+    </div>
+
+    <!-- Section 1: KPI Report & Export View -->
+    <div id="hubSectionKPI">
+      <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px;">
+        ✦ 本月財務 KPI 指標 (<span id="kpiMonthLabel">2026年10月</span>)
+      </div>
+
+      <!-- KPI Summary Cards Grid -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+        <div style="background:var(--card-subtle); padding:10px; border-radius:12px; border:1px solid var(--border);">
+          <div style="font-size:10px; color:var(--text-muted); font-weight:600;">總收入 (Income)</div>
+          <div style="font-size:16px; font-weight:800; color:var(--green); margin-top:2px;" id="kpiIncomeVal">HK$ 0</div>
+        </div>
+        <div style="background:var(--card-subtle); padding:10px; border-radius:12px; border:1px solid var(--border);">
+          <div style="font-size:10px; color:var(--text-muted); font-weight:600;">總支出 (Expense)</div>
+          <div style="font-size:16px; font-weight:800; color:var(--rose); margin-top:2px;" id="kpiExpenseVal">HK$ 0</div>
+        </div>
+        <div style="background:var(--card-subtle); padding:10px; border-radius:12px; border:1px solid var(--border);">
+          <div style="font-size:10px; color:var(--text-muted); font-weight:600;">淨儲蓄 (Net Savings)</div>
+          <div style="font-size:16px; font-weight:800; color:var(--green); margin-top:2px;" id="kpiSavingsVal">+HK$ 0</div>
+        </div>
+        <div style="background:var(--card-subtle); padding:10px; border-radius:12px; border:1px solid var(--border);">
+          <div style="font-size:10px; color:var(--text-muted); font-weight:600;">家庭儲蓄率 (Rate)</div>
+          <div style="font-size:16px; font-weight:800; color:var(--accent-light); margin-top:2px;" id="kpiRateVal">0%</div>
+        </div>
+      </div>
+
+      <!-- Secondary Metrics: Daily Avg & Total Transactions -->
+      <div style="background:var(--card-subtle); padding:8px 12px; border-radius:12px; font-size:11px; margin-bottom:12px; display:flex; justify-content:space-between;">
+        <span style="color:var(--text-muted);">本月日均開銷：<b style="color:var(--text-main);" id="kpiDailyAvg">HK$ 0</b></span>
+        <span style="color:var(--text-muted);">累計筆數：<b style="color:var(--text-main);" id="kpiTxnCount">0 筆</b></span>
+      </div>
+
+      <!-- Wants vs Needs & Boba Index (Learned from Fortune City) -->
+      <div style="background:var(--card-subtle); padding:10px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border);">
+        <div style="font-size:10px; font-weight:700; color:var(--text-muted); margin-bottom:5px;">✦ 開銷體質分析 (50/30/20 法則)：</div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; margin-bottom:4px;">
+          <span style="color:var(--green);">必要剛需 (Needs)：<span id="kpiNeedsVal">0%</span></span>
+          <span style="color:var(--orange);">犒賞享樂 (Wants)：<span id="kpiWantsVal">0%</span></span>
+        </div>
+        <div style="height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; display:flex;">
+          <div id="kpiNeedsBar" style="height:100%; width:50%; background:var(--green); transition:width 0.3s ease;"></div>
+          <div id="kpiWantsBar" style="height:100%; width:50%; background:var(--orange); transition:width 0.3s ease;"></div>
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); margin-top:6px; display:flex; justify-content:space-between;" id="kpiBobaStat">
+          <span>🥤 手搖咖啡指數：本月 0 次</span>
+          <span id="kpiBobaAmt">HK$ 0</span>
+        </div>
+      </div>
+
+      <!-- Top Expense Category Breakdown -->
+      <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px;">支出排行 (Top Categories)：</div>
+      <div id="kpiCategoryList" style="margin-bottom:14px;"></div>
+
+      <!-- Export Actions -->
+      <div style="font-size:11px; font-weight:700; color:var(--accent-light); margin-bottom:6px;">📥 報表匯出功能：</div>
+      <button class="create-sheet-btn" onclick="exportCSVReport()">📥 匯出 Excel / CSV 試算表</button>
+      <button class="create-sheet-btn" style="background:var(--card-subtle); border:1px solid var(--border); margin-top:6px; color:var(--text-main);" onclick="copyKPIReportSummary()">📋 複製月報摘要 (傳送至 WhatsApp/Notion)</button>
+    </div>
+
+    <!-- Section 2: Advanced Stored Tools (10% Space) -->
+    <div id="hubSectionTools" style="display:none;">
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px; line-height:1.4;">
+        所有進階與較複雜的配置統一收納於此，不干擾平時 3 秒快速記帳流程。
+      </p>
+
+      <div class="sheet-list-item" onclick="closeModals(); setTimeout(openRecurringModal, 150);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">📅</span>
+          <div>
+            <div style="font-size:12px; font-weight:700;">週期收支自動化</div>
+            <div style="font-size:10px; color:var(--text-muted);">設定每月固定薪資、租金或浮動佣金出糧日確認</div>
+          </div>
+        </div>
+        <span style="font-size:13px; color:var(--text-muted);">›</span>
+      </div>
+
+      <div class="sheet-list-item" onclick="closeModals(); setTimeout(openSyncModal, 150);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">☁️</span>
+          <div>
+            <div style="font-size:12px; font-weight:700;">雙人雲端連線設定</div>
+            <div style="font-size:10px; color:var(--text-muted);">房間碼、PIN 密碼防撞鎖、兩機即時同步</div>
+          </div>
+        </div>
+        <span style="font-size:13px; color:var(--text-muted);">›</span>
+      </div>
+
+      <div class="sheet-list-item" onclick="closeModals(); setTimeout(openManageMembersModal, 150);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">👥</span>
+          <div>
+            <div style="font-size:12px; font-weight:700;">帳本成員名單管理</div>
+            <div style="font-size:10px; color:var(--text-muted);">新增或移除當前帳本中的分攤成員（同事/伴侶）</div>
+          </div>
+        </div>
+        <span style="font-size:13px; color:var(--text-muted);">›</span>
+      </div>
+
+      <div class="sheet-list-item" onclick="closeModals(); setTimeout(editMonthlyBudget, 150);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">🎯</span>
+          <div>
+            <div style="font-size:12px; font-weight:700;">修改本月生活預算</div>
+            <div style="font-size:10px; color:var(--text-muted);">自訂本月預算金額，調整花費進度條與每日建議額度</div>
+          </div>
+        </div>
+        <span style="font-size:13px; color:var(--text-muted);">›</span>
+      </div>
+
+      <div class="sheet-list-item" onclick="closeModals(); setTimeout(openAllCategoriesModal, 150);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">🏷️</span>
+          <div>
+            <div style="font-size:12px; font-weight:700;">全部分類抽屜 (夜間補記)</div>
+            <div style="font-size:10px; color:var(--text-muted);">檢視完整 15 個生活分類，隨時補登歷史花銷</div>
+          </div>
+        </div>
+        <span style="font-size:13px; color:var(--text-muted);">›</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1494,6 +1634,193 @@
     showToast(`✓ 已記錄：${rule.title} 實際 HK$ ${actualAmt.toLocaleString()} 入帳！`);
   }
 
+  
+  // --- Advanced Hub & KPI Report Export (Learned from User Review) ---
+  let activeHubTab = 'kpi';
+
+  function openAdvancedHubModal() {
+    triggerHaptic();
+    renderKPIReport();
+    switchHubTab('kpi');
+    document.getElementById('advancedHubModal').classList.add('open');
+  }
+
+  function switchHubTab(tab) {
+    triggerHaptic();
+    activeHubTab = tab;
+    document.getElementById('hubTabKPI').classList.toggle('active', tab === 'kpi');
+    document.getElementById('hubTabTools').classList.toggle('active', tab === 'tools');
+    document.getElementById('hubSectionKPI').style.display = tab === 'kpi' ? 'block' : 'none';
+    document.getElementById('hubSectionTools').style.display = tab === 'tools' ? 'block' : 'none';
+  }
+
+  function renderKPIReport() {
+    const sheet = getActiveSheet();
+    const now = new Date();
+    const monthStr = `${now.getFullYear()}年${now.getMonth() + 1}月`;
+    document.getElementById('kpiMonthLabel').innerText = `${sheet.name} • ${monthStr}`;
+
+    let totalInc = 0;
+    let totalExp = 0;
+    const catMap = {};
+
+    sheet.records.forEach(r => {
+      if (r.type === 'income') {
+        totalInc += r.amount;
+      } else {
+        totalExp += r.amount;
+        catMap[r.category] = (catMap[r.category] || 0) + r.amount;
+      }
+    });
+
+    const netSavings = totalInc - totalExp;
+    const rate = totalInc > 0 ? ((netSavings / totalInc) * 100).toFixed(1) : 0;
+    const dayOfMonth = Math.max(1, now.getDate());
+    const dailyAvg = (totalExp / dayOfMonth).toFixed(1);
+
+    document.getElementById('kpiIncomeVal').innerText = 'HK$ ' + totalInc.toLocaleString();
+    document.getElementById('kpiExpenseVal').innerText = 'HK$ ' + totalExp.toLocaleString();
+    document.getElementById('kpiSavingsVal').innerText = (netSavings >= 0 ? '+' : '-') + 'HK$ ' + Math.abs(netSavings).toLocaleString();
+    document.getElementById('kpiSavingsVal').style.color = netSavings >= 0 ? 'var(--green)' : 'var(--rose)';
+    document.getElementById('kpiRateVal').innerText = Math.max(0, rate) + '%';
+    document.getElementById('kpiDailyAvg').innerText = 'HK$ ' + dailyAvg;
+    document.getElementById('kpiTxnCount').innerText = sheet.records.length + ' 筆';
+
+    // Wants vs Needs calculation (Needs: Supermarket, Transit, Home/Utilities, Medical)
+    let needsTotal = 0;
+    let wantsTotal = 0;
+    let bobaCount = 0;
+    let bobaTotal = 0;
+
+    sheet.records.forEach(r => {
+      if (r.type !== 'income') {
+        const cat = r.category || '';
+        if (cat.includes('超市') || cat.includes('買餸') || cat.includes('交通') || cat.includes('地鐵') || cat.includes('巴士') || cat.includes('日用') || cat.includes('家居') || cat.includes('醫療') || cat.includes('睇醫生')) {
+          needsTotal += r.amount;
+        } else {
+          wantsTotal += r.amount;
+        }
+
+        if (cat.includes('手搖') || cat.includes('咖啡') || cat.includes('飲品') || r.icon === '☕') {
+          bobaCount++;
+          bobaTotal += r.amount;
+        }
+      }
+    });
+
+    const needsPct = totalExp > 0 ? Math.round((needsTotal / totalExp) * 100) : 50;
+    const wantsPct = totalExp > 0 ? (100 - needsPct) : 50;
+
+    const nVal = document.getElementById('kpiNeedsVal');
+    if (nVal) nVal.innerText = `${needsPct}% (HK$ ${needsTotal.toFixed(0)})`;
+    const wVal = document.getElementById('kpiWantsVal');
+    if (wVal) wVal.innerText = `${wantsPct}% (HK$ ${wantsTotal.toFixed(0)})`;
+    const nBar = document.getElementById('kpiNeedsBar');
+    if (nBar) nBar.style.width = needsPct + '%';
+    const wBar = document.getElementById('kpiWantsBar');
+    if (wBar) wBar.style.width = wantsPct + '%';
+
+    const bStat = document.getElementById('kpiBobaStat');
+    if (bStat) bStat.innerHTML = `<span>🥤 手搖咖啡指數：本月 <b>${bobaCount}</b> 杯</span><span style="color:var(--text-main); font-weight:700;">HK$ ${bobaTotal.toFixed(0)}</span>`;
+
+    // Top categories
+    const catList = document.getElementById('kpiCategoryList');
+    catList.innerHTML = '';
+    const sorted = Object.entries(catMap).sort((a,b) => b[1] - a[1]);
+
+    if (sorted.length === 0) {
+      catList.innerHTML = '<div style="font-size:11px; color:var(--text-muted);">本月尚無支出數據</div>';
+    } else {
+      sorted.slice(0, 5).forEach(([cat, val]) => {
+        const pct = totalExp > 0 ? ((val / totalExp) * 100).toFixed(0) : 0;
+        const row = document.createElement('div');
+        row.style.marginBottom = '6px';
+        row.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px;">
+            <span>${cat}</span>
+            <span>HK$ ${val.toFixed(1)} (${pct}%)</span>
+          </div>
+          <div style="height:5px; background:var(--card-subtle); border-radius:3px; overflow:hidden;">
+            <div style="height:100%; width:${pct}%; background:var(--accent);"></div>
+          </div>
+        `;
+        catList.appendChild(row);
+      });
+    }
+  }
+
+  // 1. Export CSV
+  function exportCSVReport() {
+    triggerHaptic();
+    const sheet = getActiveSheet();
+    if (sheet.records.length === 0) {
+      showToast('目前帳本無記錄，無法匯出');
+      return;
+    }
+
+    // CSV Header with UTF-8 BOM so Excel opens without garbled Chinese
+    let csvContent = '﻿記錄時間,類別,收支類型,金額(HKD),付款人,支付方式,分攤成員\n';
+
+    sheet.records.forEach(r => {
+      const typeStr = r.type === 'income' ? '收入' : '支出';
+      const parts = r.participants ? r.participants.join(';') : sheet.members.join(';');
+      const cleanCat = (r.category || '').replace(/,/g, ' ');
+      csvContent += `"${r.date}","${cleanCat}","${typeStr}",${r.amount},"${r.payer}","${r.paymentMethod || '信用卡'}","${parts}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const now = new Date();
+    const fname = `DuoTab_${sheet.name}_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}.csv`;
+    link.setAttribute('href', url);
+    link.setAttribute('download', fname);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('已成功匯出 CSV 試算表 📥');
+  }
+
+  // 2. Copy KPI Summary
+  function copyKPIReportSummary() {
+    triggerHaptic();
+    const sheet = getActiveSheet();
+    const now = new Date();
+    const monthStr = `${now.getFullYear()}年${now.getMonth() + 1}月`;
+
+    let totalInc = 0;
+    let totalExp = 0;
+    const catMap = {};
+
+    sheet.records.forEach(r => {
+      if (r.type === 'income') totalInc += r.amount;
+      else {
+        totalExp += r.amount;
+        catMap[r.category] = (catMap[r.category] || 0) + r.amount;
+      }
+    });
+
+    const net = totalInc - totalExp;
+    const rate = totalInc > 0 ? ((net / totalInc) * 100).toFixed(1) : 0;
+    const sorted = Object.entries(catMap).sort((a,b) => b[1] - a[1]);
+
+    let text = `📊【DuoTab 財務月報 - ${sheet.name}】(${monthStr})\n`;
+    text += `• 總收入 (Income)：HK$ ${totalInc.toLocaleString()}\n`;
+    text += `• 總支出 (Expense)：HK$ ${totalExp.toLocaleString()}\n`;
+    text += `• 淨儲蓄 (Net Saving)：HK$ ${net.toLocaleString()} (儲蓄率: ${Math.max(0, rate)}%)\n`;
+    text += `• 日均開銷：HK$ ${(totalExp / Math.max(1, now.getDate())).toFixed(1)}\n`;
+    text += `• 累計筆數：${sheet.records.length} 筆\n\n`;
+    text += `【Top 3 開銷類別】\n`;
+    sorted.slice(0, 3).forEach(([cat, val], idx) => {
+      const pct = totalExp > 0 ? ((val / totalExp) * 100).toFixed(0) : 0;
+      text += `${idx+1}. ${cat}：HK$ ${val.toFixed(1)} (${pct}%)\n`;
+    });
+
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('已複製月報摘要！可貼入 WhatsApp/Notion 📲');
+    }).catch(() => showToast('複製失敗'));
+  }
+
   // --- Smart Time-based Categories (Learned from Fortune City) ---
   function getTimeBasedCategories() {
     const hour = new Date().getHours();
@@ -1683,6 +2010,8 @@
 
     const isCouple = sheet.type === 'couple' || sheet.members.length === 2;
     document.getElementById('coupleViewSwitcher').style.display = isCouple ? 'grid' : 'none';
+    const pRow = document.getElementById('participantSelectorRow');
+    if (pRow) pRow.style.display = isCouple ? 'none' : 'flex';
     if (!isCouple) {
       document.getElementById('cardSplit').style.display = 'block';
       document.getElementById('cardPnL').style.display = 'none';
