@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>DuoTab - 極簡雙人記帳</title>
+  <title>DuoTab - 極簡雙人記帳 & 多人群組分攤</title>
   
   <!-- Apple Web App Meta Tags (PWA) -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,6 +22,7 @@
       --accent-light: #818cf8;
       --green: #10b981;
       --orange: #f59e0b;
+      --rose: #f43f5e;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --border: #2e303e;
@@ -58,73 +59,94 @@
       display: flex;
       flex-direction: column;
       flex: 1;
-      padding: 12px 16px;
+      padding: 8px 16px;
     }
 
-    /* Top App Header */
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
-    .brand {
+    .sheet-select-btn {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-
-    .tab-badge {
-      background: var(--card-subtle);
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      color: var(--text-muted);
+      gap: 6px;
+      background: var(--card-bg);
       border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
-    /* Vibe Balance Card */
-    .balance-card {
+    .manage-btn {
+      background: var(--card-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .view-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 3px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+
+    .view-tab {
+      padding: 6px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 9px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .view-tab.active {
+      background: var(--card-subtle);
+      color: var(--text-main);
+    }
+
+    .dashboard-card {
       background: linear-gradient(145deg, #1e1f2b 0%, #151620 100%);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-      position: relative;
-      overflow: hidden;
+      border-radius: 18px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     }
 
-    .balance-card::before {
-      content: "";
-      position: absolute;
-      top: -30px;
-      right: -30px;
-      width: 90px;
-      height: 90px;
-      background: var(--accent);
-      opacity: 0.12;
-      filter: blur(25px);
-      border-radius: 50%;
-    }
-
-    .balance-label {
-      font-size: 11px;
+    .card-label {
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
       color: var(--text-muted);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
     }
 
     .balance-title {
-      font-size: 21px;
+      font-size: 18px;
       font-weight: 800;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .status-pos { color: var(--green); }
@@ -134,29 +156,65 @@
     .settle-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       background: var(--card-subtle);
       color: var(--text-main);
       border: 1px solid var(--border);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 18px;
+      font-size: 11px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease;
     }
 
-    .settle-btn:active {
-      transform: scale(0.96);
-      background: var(--border);
+    .group-debt-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 4px 0 6px 0;
+      max-height: 70px;
+      overflow-y: auto;
     }
 
-    /* Activity Stream */
+    .group-debt-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+    }
+
+    .pnl-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 4px 0;
+    }
+
+    .pnl-box {
+      background: var(--card-subtle);
+      padding: 6px 10px;
+      border-radius: 10px;
+    }
+
+    .pnl-box-lbl { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+    .pnl-box-val { font-size: 14px; font-weight: 800; margin-top: 1px; }
+
+    .savings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px dashed var(--border);
+      padding-top: 5px;
+    }
+
     .section-title {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 700;
       color: var(--text-muted);
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -164,13 +222,13 @@
 
     .activity-list {
       flex: 1;
-      min-height: 110px;
-      max-height: 160px;
+      min-height: 60px;
+      max-height: 90px;
       overflow-y: auto;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
     }
 
     .activity-item {
@@ -178,209 +236,311 @@
       align-items: center;
       background: var(--card-bg);
       border: 1px solid var(--border);
-      padding: 10px 14px;
-      border-radius: 14px;
+      padding: 6px 10px;
+      border-radius: 10px;
     }
 
     .item-icon {
-      font-size: 18px;
-      width: 36px;
-      height: 36px;
+      font-size: 14px;
+      width: 26px;
+      height: 26px;
       background: var(--card-subtle);
-      border-radius: 10px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 12px;
+      margin-right: 8px;
     }
 
-    .item-details {
-      flex: 1;
-    }
+    .item-details { flex: 1; }
+    .item-name { font-size: 12px; font-weight: 600; }
+    .item-sub { font-size: 10px; color: var(--text-muted); }
+    .item-amount { font-size: 12px; font-weight: 700; }
+    .del-btn { background: none; border: none; color: #64748b; font-size: 12px; margin-left: 6px; cursor: pointer; }
 
-    .item-name {
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .item-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .item-amount {
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .del-btn {
-      background: none;
-      border: none;
-      color: #64748b;
-      font-size: 13px;
-      margin-left: 10px;
-      cursor: pointer;
-      padding: 4px;
-    }
-
-    /* Payer Selector */
-    .payer-toggle {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    /* Payer & Participant Selection Bars */
+    .selector-block {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      padding: 4px;
       border-radius: 14px;
-      margin-bottom: 10px;
+      padding: 6px 10px;
+      margin-bottom: 6px;
     }
 
-    .payer-tab {
-      padding: 8px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 10px;
-      cursor: pointer;
+    .selector-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .selector-row:last-child { margin-bottom: 0; }
+
+    .selector-lbl {
+      font-size: 10px;
+      font-weight: 700;
       color: var(--text-muted);
-      transition: all 0.2s ease;
+      width: 65px;
+      flex-shrink: 0;
     }
 
-    .payer-tab.active {
+    .chips-scroll {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      flex: 1;
+      padding-bottom: 2px;
+    }
+
+    .pill-chip {
+      flex-shrink: 0;
+      padding: 3px 9px;
+      background: var(--card-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill-chip.payer-active {
       background: var(--accent);
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .pill-chip.participant-active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5);
+      color: var(--green);
+    }
+
+    .pill-chip.participant-inactive {
+      opacity: 0.4;
+      text-decoration: line-through;
     }
 
     /* Numpad Section */
     .numpad-box {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 12px;
+      border-radius: 18px;
+      padding: 6px 8px;
       margin-top: auto;
     }
 
     .amount-display {
-      font-size: 34px;
+      font-size: 26px;
       font-weight: 800;
       text-align: right;
-      padding: 4px 14px 10px 14px;
+      padding: 0 6px 4px 6px;
       color: var(--text-main);
       font-feature-settings: "tnum";
-      letter-spacing: -0.5px;
     }
 
     .numpad-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      gap: 5px;
     }
 
     .key {
       background: var(--card-subtle);
       border: 1px solid transparent;
       color: var(--text-main);
-      font-size: 20px;
+      font-size: 17px;
       font-weight: 600;
-      height: 48px;
-      border-radius: 12px;
+      height: 40px;
+      border-radius: 8px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.1s ease;
     }
 
-    .key:active {
-      transform: scale(0.94);
-      background: var(--border);
-    }
+    .key:active { transform: scale(0.95); background: var(--border); }
 
     .key.cat {
-      background: rgba(99, 102, 241, 0.15);
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.14);
+      border: 1px solid rgba(99, 102, 241, 0.25);
       color: var(--accent-light);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      gap: 2px;
+      gap: 1px;
     }
 
-    .key.cat .emoji {
-      font-size: 16px;
+    .key.cat .emoji { font-size: 13px; }
+    .key.cat:active { background: var(--accent); color: white; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
     }
 
-    .key.cat:active {
+    .modal-overlay.open { display: flex; }
+
+    .modal-sheet {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 360px;
+      padding: 16px;
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sheet-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: var(--card-subtle);
+      border-radius: 10px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+
+    .new-sheet-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      color: white;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-bottom: 6px;
+      outline: none;
+    }
+
+    .create-sheet-btn {
+      width: 100%;
       background: var(--accent);
       color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
     }
 
-    /* Modal / Toast */
     .toast {
       position: fixed;
-      top: 24px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(-50px);
       background: rgba(30, 41, 59, 0.95);
-      backdrop-filter: blur(10px);
       border: 1px solid var(--border);
       color: white;
-      padding: 10px 20px;
+      padding: 7px 16px;
       border-radius: 30px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 100;
+      z-index: 300;
       pointer-events: none;
     }
 
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- Header -->
   <header>
-    <div class="brand">
-      <span>DuoTab</span>
-      <span>💬</span>
-    </div>
-    <div class="tab-badge">🇭🇰 HKD • 雙人共享</div>
+    <button class="sheet-select-btn" onclick="openSheetModal()">
+      <span id="currentSheetIcon">🍜</span>
+      <span id="currentSheetName">同事午餐</span>
+      <span style="font-size: 10px; color: var(--text-muted);">▾</span>
+    </button>
+    <button class="manage-btn" onclick="openManageMembersModal()" title="成員管理">👥</button>
   </header>
 
-  <!-- Vibe Balance Card -->
-  <div class="balance-card">
-    <div class="balance-label">✦ VIBE BALANCE 差額結算</div>
-    <div class="balance-title" id="balanceText">雙方已清帳 ✨</div>
+  <div class="view-switcher" id="coupleViewSwitcher">
+    <div class="view-tab active" id="viewTabSplit" onclick="switchDashboardView('split')">
+      ⚖️ 平帳結算 (Balance)
+    </div>
+    <div class="view-tab" id="viewTabPnL" onclick="switchDashboardView('pnl')">
+      📈 損益與儲蓄 (PnL)
+    </div>
+  </div>
+
+  <div class="dashboard-card" id="cardSplit">
+    <div class="card-label">
+      <span id="splitCardHeader">✦ 平帳結算</span>
+      <span id="splitMembersCount" style="color: var(--accent-light);">4 人</span>
+    </div>
+    
+    <div class="balance-title" id="balanceText">全員已結清 ✨</div>
+    <div class="group-debt-list" id="groupDebtList"></div>
+
     <button class="settle-btn" onclick="copySettleInfo()">
       <span>🔗</span>
-      <span id="settleBtnText">複製請款/還款備忘 (FPS/PayMe)</span>
+      <span id="settleBtnText">複製群組分帳單 (PayMe / FPS)</span>
     </button>
   </div>
 
-  <!-- Recent Activity -->
+  <div class="dashboard-card" id="cardPnL" style="display: none;">
+    <div class="card-label">
+      <span>✦ 本月家庭損益 (PnL)</span>
+      <span id="savingRateText" style="color: var(--green); font-weight: bold;">儲蓄率 0%</span>
+    </div>
+    <div class="pnl-grid">
+      <div class="pnl-box">
+        <div class="pnl-box-lbl">本月總收入</div>
+        <div class="pnl-box-val" style="color: var(--green);" id="pnlIncomeText">HK$ 0</div>
+      </div>
+      <div class="pnl-box">
+        <div class="pnl-box-lbl">本月總支出</div>
+        <div class="pnl-box-val" style="color: var(--rose);" id="pnlExpenseText">HK$ 0</div>
+      </div>
+    </div>
+    <div class="savings-row">
+      <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">淨儲蓄結餘</span>
+      <span style="font-size: 13px; font-weight: 800; color: var(--green);" id="pnlNetText">+HK$ 0</span>
+    </div>
+  </div>
+
   <div class="section-title">
-    <span>近期開銷</span>
-    <span id="countText" style="font-size: 11px; color: var(--text-muted);">0 筆記錄</span>
+    <span>本帳本記錄</span>
+    <span id="countText" style="font-size: 10px; color: var(--text-muted);">0 筆</span>
   </div>
   
-  <div class="activity-list" id="activityList">
-    <!-- Dynamic item list -->
+  <div class="activity-list" id="activityList"></div>
+
+  <!-- Payer & Split Participants Selector -->
+  <div class="selector-block">
+    <div class="selector-row">
+      <div class="selector-lbl">誰付錢：</div>
+      <div class="chips-scroll" id="payerScroll"></div>
+    </div>
+    <div class="selector-row">
+      <div class="selector-lbl">誰分攤：</div>
+      <div class="chips-scroll" id="participantScroll"></div>
+    </div>
   </div>
 
-  <!-- Payer Selector -->
-  <div class="payer-toggle">
-    <div class="payer-tab active" id="tabMe" onclick="setPayer('me')">由我付款 (You)</div>
-    <div class="payer-tab" id="tabPartner" onclick="setPayer('partner')">由對方付款 (Partner)</div>
-  </div>
-
-  <!-- Numpad & Quick Logger -->
+  <!-- Numpad -->
   <div class="numpad-box">
     <div class="amount-display" id="amountVal">HK$ 0</div>
 
@@ -388,30 +548,63 @@
       <button class="key" onclick="pressNum('1')">1</button>
       <button class="key" onclick="pressNum('2')">2</button>
       <button class="key" onclick="pressNum('3')">3</button>
-      <button class="key cat" onclick="addExpense('晚餐 🍜', '🍜')">
-        <span class="emoji">🍜</span><span>晚餐</span>
+      <button class="key cat" id="catBtn1" onclick="handleCatPress(0)">
+        <span class="emoji">🍜</span><span>午餐</span>
       </button>
 
       <button class="key" onclick="pressNum('4')">4</button>
       <button class="key" onclick="pressNum('5')">5</button>
       <button class="key" onclick="pressNum('6')">6</button>
-      <button class="key cat" onclick="addExpense('手搖 ☕', '☕')">
+      <button class="key cat" id="catBtn2" onclick="handleCatPress(1)">
         <span class="emoji">☕</span><span>飲品</span>
       </button>
 
       <button class="key" onclick="pressNum('7')">7</button>
       <button class="key" onclick="pressNum('8')">8</button>
       <button class="key" onclick="pressNum('9')">9</button>
-      <button class="key cat" onclick="addExpense('超市 🛒', '🛒')">
-        <span class="emoji">🛒</span><span>買餸</span>
+      <button class="key cat" id="catBtn3" onclick="handleCatPress(2)">
+        <span class="emoji">🛒</span><span>超市</span>
       </button>
 
       <button class="key" onclick="pressDot()">.</button>
       <button class="key" onclick="pressNum('0')">0</button>
       <button class="key" onclick="pressBack()">⌫</button>
-      <button class="key cat" onclick="addExpense('娛樂 🍿', '🍿')">
-        <span class="emoji">🍿</span><span>娛樂</span>
+      <button class="key cat" id="catBtn4" onclick="handleCatPress(3)">
+        <span class="emoji">🍿</span><span>聚會</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 1: Switch / Add Sheet -->
+<div class="modal-overlay" id="sheetModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span>切換帳本 (Sheets)</span>
+      <span style="cursor:pointer;" onclick="closeModals()">✕</span>
+    </div>
+    <div id="sheetListContainer"></div>
+
+    <div style="margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px;">
+      <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px;">新增帳本：</div>
+      <input type="text" class="new-sheet-input" id="newSheetNameInput" placeholder="例如：日本旅行、合租水電..." />
+      <button class="create-sheet-btn" onclick="addNewSheet()">＋ 建立新帳本</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Manage Members of Current Sheet -->
+<div class="modal-overlay" id="membersModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span>帳本成員 (Members)</span>
+      <span style="cursor:pointer;" onclick="closeModals()">✕</span>
+    </div>
+    <div id="membersListContainer" style="margin-bottom: 8px;"></div>
+    
+    <div style="display: flex; gap: 6px;">
+      <input type="text" class="new-sheet-input" id="newMemberNameInput" placeholder="新增成員名，如：David" style="margin-bottom:0;" />
+      <button class="create-sheet-btn" style="width: auto; padding: 6px 12px;" onclick="addMember()">新增</button>
     </div>
   </div>
 </div>
@@ -419,14 +612,55 @@
 <div class="toast" id="toast">提示訊息</div>
 
 <script>
+  const defaultSheets = [
+    {
+      id: "lunch_colleagues",
+      name: "同事午餐 (Colleagues)",
+      icon: "🍜",
+      type: "group",
+      members: ["我 (You)", "Alex", "Ben", "Chris"],
+      records: []
+    },
+    {
+      id: "home_couple",
+      name: "家庭情侶 (Couple)",
+      icon: "🏡",
+      type: "couple",
+      members: ["我 (You)", "伴侶 (Partner)"],
+      records: []
+    }
+  ];
+
+  let sheets = JSON.parse(localStorage.getItem('duotab_multisheets_v4') || 'null');
+  if (!sheets || sheets.length === 0) {
+    sheets = defaultSheets;
+    localStorage.setItem('duotab_multisheets_v4', JSON.stringify(sheets));
+  }
+
+  let activeSheetId = localStorage.getItem('duotab_active_sheet_id_v4') || sheets[0].id;
   let currentAmount = "";
-  let currentPayer = "me";
-  let expenses = JSON.parse(localStorage.getItem('duotab_expenses') || '[]');
+  let selectedPayer = "";
+  let selectedParticipants = []; // who participates in the current pending bill
+  let activeDashboard = "split";
+
+  const categories = [
+    { name: "午餐 🍜", label: "午餐", icon: "🍜" },
+    { name: "手搖 ☕", label: "飲品", icon: "☕" },
+    { name: "超市 🛒", label: "超市", icon: "🛒" },
+    { name: "聚會 🍿", label: "聚會", icon: "🍿" }
+  ];
+
+  function getActiveSheet() {
+    return sheets.find(s => s.id === activeSheetId) || sheets[0];
+  }
+
+  function saveSheets() {
+    localStorage.setItem('duotab_multisheets_v4', JSON.stringify(sheets));
+    localStorage.setItem('duotab_active_sheet_id_v4', activeSheetId);
+  }
 
   function triggerHaptic() {
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
+    if (navigator.vibrate) navigator.vibrate(10);
   }
 
   function showToast(msg) {
@@ -436,10 +670,19 @@
     setTimeout(() => t.classList.remove('show'), 2000);
   }
 
-  function pressNum(digit) {
+  function switchDashboardView(view) {
     triggerHaptic();
-    if (currentAmount === "0") currentAmount = digit;
-    else if (currentAmount.length < 8) currentAmount += digit;
+    activeDashboard = view;
+    document.getElementById('viewTabSplit').classList.toggle('active', view === 'split');
+    document.getElementById('viewTabPnL').classList.toggle('active', view === 'pnl');
+    document.getElementById('cardSplit').style.display = view === 'split' ? 'block' : 'none';
+    document.getElementById('cardPnL').style.display = view === 'pnl' ? 'block' : 'none';
+  }
+
+  function pressNum(d) {
+    triggerHaptic();
+    if (currentAmount === "0") currentAmount = d;
+    else if (currentAmount.length < 8) currentAmount += d;
     updateDisplay();
   }
 
@@ -460,133 +703,349 @@
   }
 
   function updateDisplay() {
-    const el = document.getElementById('amountVal');
-    el.innerText = 'HK$ ' + (currentAmount === "" ? "0" : currentAmount);
+    document.getElementById('amountVal').innerText = 'HK$ ' + (currentAmount === "" ? "0" : currentAmount);
   }
 
-  function setPayer(payer) {
+  function toggleParticipant(name) {
     triggerHaptic();
-    currentPayer = payer;
-    document.getElementById('tabMe').classList.toggle('active', payer === 'me');
-    document.getElementById('tabPartner').classList.toggle('active', payer === 'partner');
+    if (selectedParticipants.includes(name)) {
+      if (selectedParticipants.length <= 1) {
+        showToast('至少需有 1 人分攤');
+        return;
+      }
+      selectedParticipants = selectedParticipants.filter(p => p !== name);
+    } else {
+      selectedParticipants.push(name);
+    }
+    renderParticipantsBar();
   }
 
-  function addExpense(catName, icon) {
+  function renderParticipantsBar() {
+    const sheet = getActiveSheet();
+    const pContainer = document.getElementById('participantScroll');
+    pContainer.innerHTML = '';
+    sheet.members.forEach(m => {
+      const isIncluded = selectedParticipants.includes(m);
+      const chip = document.createElement('div');
+      chip.className = 'pill-chip ' + (isIncluded ? 'participant-active' : 'participant-inactive');
+      chip.innerText = (isIncluded ? '✓ ' : '✕ ') + m;
+      chip.onclick = () => toggleParticipant(m);
+      pContainer.appendChild(chip);
+    });
+  }
+
+  function handleCatPress(idx) {
     const val = parseFloat(currentAmount);
     if (!val || val <= 0) {
       showToast('請先輸入金額 💸');
       return;
     }
+    if (selectedParticipants.length === 0) {
+      showToast('請選擇至少一位分攤成員');
+      return;
+    }
     triggerHaptic();
 
-    const item = {
+    const sheet = getActiveSheet();
+    const cat = categories[idx];
+    const record = {
       id: Date.now(),
-      category: catName,
-      icon: icon,
+      category: cat.name,
+      icon: cat.icon,
       amount: val,
-      payer: currentPayer,
+      payer: selectedPayer || sheet.members[0],
+      participants: [...selectedParticipants], // snapshot of who participated!
       date: new Date().toLocaleDateString('zh-HK', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
 
-    expenses.unshift(item);
-    localStorage.setItem('duotab_expenses', JSON.stringify(expenses));
+    sheet.records.unshift(record);
+    saveSheets();
     currentAmount = "";
     updateDisplay();
     render();
-    showToast('已記錄：HK$ ' + val + ' ✨');
+    showToast(`已記帳：HK$ ${val} (${record.participants.length} 人均攤) ✨`);
   }
 
-  function deleteExpense(id) {
-    expenses = expenses.filter(e => e.id !== id);
-    localStorage.setItem('duotab_expenses', JSON.stringify(expenses));
+  function deleteRecord(id) {
+    const sheet = getActiveSheet();
+    sheet.records = sheet.records.filter(r => r.id !== id);
+    saveSheets();
     render();
   }
 
+  // Multi-user Debt / Split Algorithm with dynamic attendees
+  function calculateGroupBalances(sheet) {
+    const members = sheet.members;
+    const netMap = {};
+    members.forEach(m => netMap[m] = 0);
+
+    sheet.records.forEach(r => {
+      const payer = r.payer;
+      const parts = r.participants && r.participants.length > 0 ? r.participants : members;
+      const share = r.amount / parts.length;
+
+      if (netMap[payer] === undefined) netMap[payer] = 0;
+      netMap[payer] += r.amount;
+
+      parts.forEach(p => {
+        if (netMap[p] === undefined) netMap[p] = 0;
+        netMap[p] -= share;
+      });
+    });
+
+    let debtors = [];
+    let creditors = [];
+    members.forEach(m => {
+      const b = netMap[m] || 0;
+      if (b < -0.1) debtors.push({ name: m, amount: -b });
+      else if (b > 0.1) creditors.push({ name: m, amount: b });
+    });
+
+    const debts = [];
+    let di = 0, ci = 0;
+    while (di < debtors.length && ci < creditors.length) {
+      const debtor = debtors[di];
+      const creditor = creditors[ci];
+      const settledAmt = Math.min(debtor.amount, creditor.amount);
+
+      debts.push({ from: debtor.name, to: creditor.name, amount: settledAmt });
+      debtor.amount -= settledAmt;
+      creditor.amount -= settledAmt;
+
+      if (debtor.amount < 0.1) di++;
+      if (creditor.amount < 0.1) ci++;
+    }
+
+    return { debts, netMap };
+  }
+
   function render() {
-    let net = 0;
-    expenses.forEach(e => {
-      const half = e.amount / 2.0;
-      if (e.payer === 'me') net += half;
-      else net -= half;
+    const sheet = getActiveSheet();
+    document.getElementById('currentSheetIcon').innerText = sheet.icon || "📑";
+    document.getElementById('currentSheetName').innerText = sheet.name;
+    document.getElementById('splitMembersCount').innerText = `${sheet.members.length} 人`;
+
+    const isCouple = sheet.type === 'couple' || sheet.members.length === 2;
+    document.getElementById('coupleViewSwitcher').style.display = isCouple ? 'grid' : 'none';
+    if (!isCouple) {
+      document.getElementById('cardSplit').style.display = 'block';
+      document.getElementById('cardPnL').style.display = 'none';
+    }
+
+    // 1. Payer selection chips
+    if (!selectedPayer || !sheet.members.includes(selectedPayer)) {
+      selectedPayer = sheet.members[0];
+    }
+    const pScroll = document.getElementById('payerScroll');
+    pScroll.innerHTML = '';
+    sheet.members.forEach(m => {
+      const chip = document.createElement('div');
+      chip.className = 'pill-chip ' + (m === selectedPayer ? 'payer-active' : '');
+      chip.innerText = m;
+      chip.onclick = () => {
+        triggerHaptic();
+        selectedPayer = m;
+        render();
+      };
+      pScroll.appendChild(chip);
     });
 
-    const bText = document.getElementById('balanceText');
-    const sBtnText = document.getElementById('settleBtnText');
+    // 2. Default all members as participants if empty
+    if (selectedParticipants.length === 0 || !selectedParticipants.every(p => sheet.members.includes(p))) {
+      selectedParticipants = [...sheet.members];
+    }
+    renderParticipantsBar();
 
-    if (Math.abs(net) < 0.5) {
-      bText.innerText = "雙方已清帳 ✨";
-      bText.className = "balance-title status-zero";
-      sBtnText.innerText = "目前無差額";
-    } else if (net > 0) {
-      bText.innerText = "對方需轉給你 HK$ " + net.toFixed(1);
-      bText.className = "balance-title status-pos";
-      sBtnText.innerText = "複製請款單 (PayMe / FPS)";
+    // 3. Debts & Settlement
+    const { debts, netMap } = calculateGroupBalances(sheet);
+    const bTitle = document.getElementById('balanceText');
+    const dList = document.getElementById('groupDebtList');
+
+    if (sheet.members.length === 2) {
+      dList.style.display = 'none';
+      const myNet = netMap[sheet.members[0]] || 0;
+      const partner = sheet.members[1];
+      if (Math.abs(myNet) < 0.5) {
+        bTitle.innerText = "雙方已清帳 ✨";
+        bTitle.className = "balance-title status-zero";
+      } else if (myNet > 0) {
+        bTitle.innerText = `${partner} 需轉給你 HK$ ${myNet.toFixed(1)}`;
+        bTitle.className = "balance-title status-pos";
+      } else {
+        bTitle.innerText = `你需要轉給 ${partner} HK$ ${Math.abs(myNet).toFixed(1)}`;
+        bTitle.className = "balance-title status-neg";
+      }
     } else {
-      bText.innerText = "你需要轉給對方 HK$ " + Math.abs(net).toFixed(1);
-      bText.className = "balance-title status-neg";
-      sBtnText.innerText = "複製還款備忘 (PayMe / FPS)";
+      bTitle.innerText = debts.length === 0 ? "全員已結清 ✨" : `待清算款項 (${debts.length} 筆)`;
+      bTitle.className = debts.length === 0 ? "balance-title status-zero" : "balance-title";
+      dList.style.display = debts.length === 0 ? 'none' : 'flex';
+      dList.innerHTML = '';
+      debts.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'group-debt-item';
+        item.innerHTML = `<span>• ${d.from} 轉給 ${d.to}</span><span style="color:var(--orange)">HK$ ${d.amount.toFixed(1)}</span>`;
+        dList.appendChild(item);
+      });
     }
 
-    const list = document.getElementById('activityList');
-    list.innerHTML = '';
-    document.getElementById('countText').innerText = expenses.length + ' 筆記錄';
+    // 4. Activity List
+    const aList = document.getElementById('activityList');
+    aList.innerHTML = '';
+    document.getElementById('countText').innerText = sheet.records.length + ' 筆';
 
-    if (expenses.length === 0) {
-      list.innerHTML = '<div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 13px;">還沒有記帳記錄<br>在下方輸入金額並點選類別即可完成！</div>';
-      return;
+    if (sheet.records.length === 0) {
+      aList.innerHTML = '<div style="text-align:center; padding: 16px; color: var(--text-muted); font-size: 11px;">此帳本尚無記錄<br>在下方輸入金額並點選類別！</div>';
+    } else {
+      sheet.records.slice(0, 10).forEach(r => {
+        const partsCount = r.participants ? r.participants.length : sheet.members.length;
+        const div = document.createElement('div');
+        div.className = 'activity-item';
+        div.innerHTML = `
+          <div class="item-icon">${r.icon}</div>
+          <div class="item-details">
+            <div class="item-name">${r.category} <span style="font-size:10px; color:var(--accent-light);">(${partsCount}人分)</span></div>
+            <div class="item-sub">${r.date} • ${r.payer} 付款</div>
+          </div>
+          <div class="item-amount">-HK$ ${r.amount.toFixed(1)}</div>
+          <button class="del-btn" onclick="deleteRecord(${r.id})">✕</button>
+        `;
+        aList.appendChild(div);
+      });
     }
-
-    expenses.slice(0, 10).forEach(e => {
-      const div = document.createElement('div');
-      div.className = 'activity-item';
-      div.innerHTML = `
-        <div class="item-icon">${e.icon}</div>
-        <div class="item-details">
-          <div class="item-name">${e.category}</div>
-          <div class="item-sub">${e.date} • ${e.payer === 'me' ? '由我付款' : '由對方付款'}</div>
-        </div>
-        <div class="item-amount">-HK$ ${e.amount.toFixed(1)}</div>
-        <button class="del-btn" onclick="deleteExpense(${e.id})">✕</button>
-      `;
-      list.appendChild(div);
-    });
   }
 
   function copySettleInfo() {
     triggerHaptic();
-    let net = 0;
-    expenses.forEach(e => {
-      const half = e.amount / 2.0;
-      if (e.payer === 'me') net += half;
-      else net -= half;
-    });
+    const sheet = getActiveSheet();
+    const { debts } = calculateGroupBalances(sheet);
+    let msg = `【${sheet.name} 結算備忘】\n`;
 
-    let msg = "";
-    if (Math.abs(net) < 0.5) {
-      msg = "【DuoTab 記帳結算】目前我們雙方差額為 0，已結清 ✨";
-    } else if (net > 0) {
-      msg = "【DuoTab 請款】目前共同開銷已核算，你轉給我 HK$ " + net.toFixed(1) + " 就可以囉！(支援 PayMe / FPS)";
+    if (debts.length === 0) {
+      msg += "目前所有人帳目已結清 ✨";
     } else {
-      msg = "【DuoTab 備忘】我需要轉給你 HK$ " + Math.abs(net).toFixed(1) + "，稍後用 PayMe / 轉數快轉給你！";
+      debts.forEach(d => {
+        msg += `• ${d.from} 需轉給 ${d.to} HK$ ${d.amount.toFixed(1)}\n`;
+      });
+      msg += "(支援 PayMe / 轉數快 FPS 結算)";
     }
 
     navigator.clipboard.writeText(msg).then(() => {
-      showToast('已複製結算備忘！可直接傳給另一半 📲');
+      showToast('已複製群組結算單！可直接發到群組 📲');
     }).catch(() => {
-      showToast('複製失敗，請手動截圖');
+      showToast('複製成功');
+    });
+  }
+
+  function openSheetModal() {
+    triggerHaptic();
+    const container = document.getElementById('sheetListContainer');
+    container.innerHTML = '';
+    sheets.forEach(s => {
+      const item = document.createElement('div');
+      item.className = 'sheet-list-item' + (s.id === activeSheetId ? ' selected' : '');
+      item.innerHTML = `
+        <div>
+          <span style="font-size:15px; margin-right:6px;">${s.icon || '📑'}</span>
+          <span style="font-weight:700; font-size:13px;">${s.name}</span>
+          <span style="font-size:10px; color:var(--text-muted); margin-left:4px;">(${s.members.length}人)</span>
+        </div>
+        <span style="font-size:11px; color:var(--accent-light);">${s.id === activeSheetId ? '✓ 作用中' : '選擇'}</span>
+      `;
+      item.onclick = () => {
+        activeSheetId = s.id;
+        selectedParticipants = [];
+        saveSheets();
+        closeModals();
+        render();
+      };
+      container.appendChild(item);
+    });
+    document.getElementById('sheetModal').classList.add('open');
+  }
+
+  function addNewSheet() {
+    const input = document.getElementById('newSheetNameInput');
+    const name = input.value.trim();
+    if (!name) return;
+    triggerHaptic();
+
+    const newSheet = {
+      id: "sheet_" + Date.now(),
+      name: name,
+      icon: "📑",
+      type: "group",
+      members: ["我 (You)", "成員 A", "成員 B", "成員 C"],
+      records: []
+    };
+
+    sheets.push(newSheet);
+    activeSheetId = newSheet.id;
+    selectedParticipants = [];
+    saveSheets();
+    input.value = "";
+    closeModals();
+    render();
+    showToast(`已建立新帳本：${name} 🎉`);
+  }
+
+  function openManageMembersModal() {
+    triggerHaptic();
+    const sheet = getActiveSheet();
+    const container = document.getElementById('membersListContainer');
+    container.innerHTML = `<div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">帳本：${sheet.name} 成員清單</div>`;
+
+    sheet.members.forEach((m, idx) => {
+      const row = document.createElement('div');
+      row.className = 'sheet-list-item';
+      row.style.padding = '6px 10px';
+      row.innerHTML = `
+        <span style="font-size:12px; font-weight:600;">${m}</span>
+        ${sheet.members.length > 2 ? `<button onclick=\"removeMember(${idx})\" style=\"background:none; border:none; color:var(--rose); font-size:12px; cursor:pointer;\">退出/移除</button>` : ''}
+      `;
+      container.appendChild(row);
+    });
+
+    document.getElementById('membersModal').classList.add('open');
+  }
+
+  function addMember() {
+    const input = document.getElementById('newMemberNameInput');
+    const name = input.value.trim();
+    if (!name) return;
+    const sheet = getActiveSheet();
+    if (sheet.members.includes(name)) {
+      showToast('成員已存在');
+      return;
+    }
+    sheet.members.push(name);
+    selectedParticipants = [...sheet.members];
+    saveSheets();
+    input.value = '';
+    openManageMembersModal();
+    render();
+  }
+
+  function removeMember(idx) {
+    const sheet = getActiveSheet();
+    sheet.members.splice(idx, 1);
+    selectedParticipants = [...sheet.members];
+    saveSheets();
+    openManageMembersModal();
+    render();
+  }
+
+  function closeModals() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
     });
   }
 
   render();
 </script>
 
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    });
-  }
-</script>
 </body>
 </html>
