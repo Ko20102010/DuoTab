@@ -644,7 +644,7 @@
   </div>
 </div>
 
-<!-- Modal 3: Firebase Cloud Sync Room Settings -->
+<!-- Modal 3: Firebase Cloud Sync Room Settings with Anti-Collision PIN -->
 <div class="modal-overlay" id="syncModal">
   <div class="modal-sheet">
     <div class="modal-title">
@@ -652,12 +652,23 @@
       <span style="cursor:pointer;" onclick="closeModals()">✕</span>
     </div>
     <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4;">
-      在兩部 iPhone 上輸入<b>相同的同步房間碼</b>（例如你們專屬的英文或暱稱），兩部手機就能在幾毫秒內即時同步所有帳本與記帳！
+      在兩部 iPhone 上輸入<b>相同的房間碼與 PIN 密碼</b>，兩部手機就能即時同步。雙重密碼鎖定，絕不會與其他人撞名！
     </p>
-    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px;">設定雙人同步房間碼：</div>
+
+    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display:flex; justify-content:space-between;">
+      <span>1. 設定同步房間碼：</span>
+      <span style="color:var(--accent-light); cursor:pointer; font-size:10px;" onclick="generateUniqueRoomCode()">🎲 生成隨機唯一碼</span>
+    </div>
     <input type="text" class="new-sheet-input" id="roomCodeInput" placeholder="例如：ko-couple-2026" />
+
+    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">
+      2. 專屬防撞 PIN 密碼 (4-6 位數)：
+    </div>
+    <input type="password" class="new-sheet-input" id="roomPinInput" placeholder="例如：5209 (防止他人撞名)" maxlength="12" />
+
     <button class="create-sheet-btn" onclick="connectCloudSync()">🔗 連線並啟用即時同步</button>
-    <button class="create-sheet-btn" style="background: var(--card-subtle); margin-top: 6px; color: var(--text-muted);" onclick="disconnectSync()">斷開雲端連線 (僅本地離線)</button>
+    <button class="create-sheet-btn" style="background: var(--card-subtle); margin-top: 6px; color: var(--text-muted);" onclick="copySyncShareInfo()">📋 複製房間碼與密碼給另一半</button>
+    <button class="create-sheet-btn" style="background: transparent; border: 1px solid var(--border); margin-top: 6px; color: #64748b; font-size:11px; padding:6px;" onclick="disconnectSync()">斷開連線 (切換回本地模式)</button>
   </div>
 </div>
 
@@ -711,6 +722,32 @@
 
   let activeSheetId = localStorage.getItem('duotab_active_sheet_id_v5') || sheets[0].id;
   let syncRoomCode = localStorage.getItem('duotab_sync_room_code') || '';
+  let syncRoomPin = localStorage.getItem('duotab_sync_room_pin') || '';
+
+  function generateUniqueRoomCode() {
+    triggerHaptic();
+    const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+    let code = 'duo-';
+    for (let i = 0; i < 4; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += '-';
+    for (let i = 0; i < 4; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+    document.getElementById('roomCodeInput').value = code;
+    showToast('已生成高強度防撞唯一碼 🎲');
+  }
+
+  function copySyncShareInfo() {
+    triggerHaptic();
+    const code = document.getElementById('roomCodeInput').value.trim();
+    const pin = document.getElementById('roomPinInput').value.trim();
+    if (!code || !pin) {
+      showToast('請先填寫房間碼與 PIN 密碼');
+      return;
+    }
+    const msg = ;
+    navigator.clipboard.writeText(msg).then(() => {
+      showToast('已複製邀請文字！發給另一半即可 📲');
+    }).catch(() => showToast('複製失敗，請手動抄寫'));
+  }
   let currentAmount = "";
   let selectedPayer = "";
   let selectedParticipants = [];
@@ -776,27 +813,64 @@
   }
 
   function connectCloudSync() {
-    const input = document.getElementById('roomCodeInput');
-    const code = input.value.trim().toLowerCase();
+    const codeInput = document.getElementById('roomCodeInput');
+    const pinInput = document.getElementById('roomPinInput');
+    const code = codeInput.value.trim().toLowerCase();
+    const pin = pinInput.value.trim();
+
     if (!code) {
       showToast('請輸入房間代碼');
       return;
     }
-    syncRoomCode = code;
-    localStorage.setItem('duotab_sync_room_code', code);
-    
-    // First push current data to initialize room if not present
-    if (db) {
-      db.ref('rooms/' + code + '/sheets').once('value').then(snap => {
-        if (!snap.exists()) {
-          db.ref('rooms/' + code + '/sheets').set(sheets);
-        }
-      });
+    if (!pin) {
+      showToast('請輸入 4-6 位數防撞 PIN 密碼');
+      return;
     }
 
+    if (!db) {
+      showToast('Firebase 連線未初始化');
+      return;
+    }
+
+    // Verify room and PIN
+    db.ref('rooms/' + code).once('value').then(snap => {
+      if (!snap.exists()) {
+        // Room does not exist yet: create room with PIN and initial data
+        db.ref('rooms/' + code).set({
+          pin: pin,
+          created: Date.now(),
+          sheets: sheets
+        }).then(() => {
+          finalizeConnection(code, pin);
+          showToast('已建立新房間：' + code + ' (PIN已鎖定) ✨');
+        });
+      } else {
+        const val = snap.val();
+        if (val.pin && val.pin !== pin) {
+          showToast('❌ 密碼錯誤！該房間已被其他人使用或密碼不符');
+          return;
+        }
+        finalizeConnection(code, pin);
+        if (val.sheets && Array.isArray(val.sheets)) {
+          sheets = val.sheets;
+          localStorage.setItem('duotab_multisheets_v5', JSON.stringify(sheets));
+          render();
+        }
+        showToast('已連線房間：' + code + ' 密碼驗證成功 🎉');
+      }
+    }).catch(err => {
+      console.error(err);
+      showToast('連線失敗，請檢查網路');
+    });
+  }
+
+  function finalizeConnection(code, pin) {
+    syncRoomCode = code;
+    syncRoomPin = pin;
+    localStorage.setItem('duotab_sync_room_code', code);
+    localStorage.setItem('duotab_sync_room_pin', pin);
     startCloudSync(code);
     closeModals();
-    showToast(`已連線房間：${code} 🎉 另一半輸入同代碼即可同步！`);
   }
 
   function disconnectSync() {
@@ -1160,6 +1234,7 @@
   function openSyncModal() {
     triggerHaptic();
     document.getElementById('roomCodeInput').value = syncRoomCode;
+    document.getElementById('roomPinInput').value = syncRoomPin;
     document.getElementById('syncModal').classList.add('open');
   }
 
