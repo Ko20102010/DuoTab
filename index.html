@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>DuoTab - 極簡雙人記帳 & 多人群組分攤</title>
+  <title>DuoTab - 極簡雙人記帳 & 即時雲端同步</title>
   
   <!-- Apple Web App Meta Tags (PWA) -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,6 +12,10 @@
   <meta name="theme-color" content="#0f1015">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236366f1'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>💬</text></svg>">
+
+  <!-- Firebase SDK (Compat version for zero-build PWA) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
     :root {
@@ -69,6 +73,12 @@
       margin-bottom: 8px;
     }
 
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .sheet-select-btn {
       display: flex;
       align-items: center;
@@ -76,24 +86,43 @@
       background: var(--card-bg);
       border: 1px solid var(--border);
       color: var(--text-main);
-      padding: 6px 12px;
-      border-radius: 14px;
+      padding: 5px 10px;
+      border-radius: 12px;
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
+    }
+
+    .sync-status-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 5px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .sync-status-btn.connected {
+      border-color: rgba(16, 185, 129, 0.4);
+      color: var(--green);
     }
 
     .manage-btn {
       background: var(--card-subtle);
       border: 1px solid var(--border);
       color: var(--text-muted);
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
     }
 
@@ -378,7 +407,7 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.75);
       backdrop-filter: blur(8px);
       display: none;
       align-items: center;
@@ -422,11 +451,11 @@
       width: 100%;
       background: var(--bg);
       border: 1px solid var(--border);
-      padding: 7px 10px;
+      padding: 8px 10px;
       color: white;
       border-radius: 8px;
       font-size: 12px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       outline: none;
     }
 
@@ -435,7 +464,7 @@
       background: var(--accent);
       color: white;
       border: none;
-      padding: 8px;
+      padding: 9px;
       border-radius: 10px;
       font-weight: 700;
       font-size: 12px;
@@ -468,11 +497,17 @@
 
 <div class="container">
   <header>
-    <button class="sheet-select-btn" onclick="openSheetModal()">
-      <span id="currentSheetIcon">🍜</span>
-      <span id="currentSheetName">同事午餐</span>
-      <span style="font-size: 10px; color: var(--text-muted);">▾</span>
-    </button>
+    <div class="header-left">
+      <button class="sheet-select-btn" onclick="openSheetModal()">
+        <span id="currentSheetIcon">🏡</span>
+        <span id="currentSheetName">家庭情侶</span>
+        <span style="font-size: 10px; color: var(--text-muted);">▾</span>
+      </button>
+      <button class="sync-status-btn" id="syncStatusBtn" onclick="openSyncModal()">
+        <span id="syncDot">☁️</span>
+        <span id="syncLabel">雲端未同步</span>
+      </button>
+    </div>
     <button class="manage-btn" onclick="openManageMembersModal()" title="成員管理">👥</button>
   </header>
 
@@ -488,15 +523,15 @@
   <div class="dashboard-card" id="cardSplit">
     <div class="card-label">
       <span id="splitCardHeader">✦ 平帳結算</span>
-      <span id="splitMembersCount" style="color: var(--accent-light);">4 人</span>
+      <span id="splitMembersCount" style="color: var(--accent-light);">2 人</span>
     </div>
     
-    <div class="balance-title" id="balanceText">全員已結清 ✨</div>
+    <div class="balance-title" id="balanceText">雙方已清帳 ✨</div>
     <div class="group-debt-list" id="groupDebtList"></div>
 
     <button class="settle-btn" onclick="copySettleInfo()">
       <span>🔗</span>
-      <span id="settleBtnText">複製群組分帳單 (PayMe / FPS)</span>
+      <span id="settleBtnText">複製請款/還款備忘 (FPS/PayMe)</span>
     </button>
   </div>
 
@@ -528,7 +563,7 @@
   
   <div class="activity-list" id="activityList"></div>
 
-  <!-- Payer & Split Participants Selector -->
+  <!-- Payer & Participant Selection Bars -->
   <div class="selector-block">
     <div class="selector-row">
       <div class="selector-lbl">誰付錢：</div>
@@ -609,18 +644,47 @@
   </div>
 </div>
 
+<!-- Modal 3: Firebase Cloud Sync Room Settings -->
+<div class="modal-overlay" id="syncModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span>雙人/群組雲端同步 ☁️</span>
+      <span style="cursor:pointer;" onclick="closeModals()">✕</span>
+    </div>
+    <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4;">
+      在兩部 iPhone 上輸入<b>相同的同步房間碼</b>（例如你們專屬的英文或暱稱），兩部手機就能在幾毫秒內即時同步所有帳本與記帳！
+    </p>
+    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px;">設定雙人同步房間碼：</div>
+    <input type="text" class="new-sheet-input" id="roomCodeInput" placeholder="例如：ko-couple-2026" />
+    <button class="create-sheet-btn" onclick="connectCloudSync()">🔗 連線並啟用即時同步</button>
+    <button class="create-sheet-btn" style="background: var(--card-subtle); margin-top: 6px; color: var(--text-muted);" onclick="disconnectSync()">斷開雲端連線 (僅本地離線)</button>
+  </div>
+</div>
+
 <div class="toast" id="toast">提示訊息</div>
 
 <script>
+  // 1. Firebase Initialization with your Project Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBmOmFJgT_Jd5hUDcrmbd0uNgJILZG0adk",
+    authDomain: "duotab-e8ce8.firebaseapp.com",
+    databaseURL: "https://duotab-e8ce8-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "duotab-e8ce8",
+    storageBucket: "duotab-e8ce8.firebasestorage.app",
+    messagingSenderId: "428236464791",
+    appId: "1:428236464791:web:db06b6ae5756e5d80abfd2"
+  };
+
+  let db = null;
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  } catch (err) {
+    console.error("Firebase init error:", err);
+  }
+
+  // 2. Data State
   const defaultSheets = [
-    {
-      id: "lunch_colleagues",
-      name: "同事午餐 (Colleagues)",
-      icon: "🍜",
-      type: "group",
-      members: ["我 (You)", "Alex", "Ben", "Chris"],
-      records: []
-    },
     {
       id: "home_couple",
       name: "家庭情侶 (Couple)",
@@ -628,20 +692,30 @@
       type: "couple",
       members: ["我 (You)", "伴侶 (Partner)"],
       records: []
+    },
+    {
+      id: "lunch_colleagues",
+      name: "同事午餐 (Colleagues)",
+      icon: "🍜",
+      type: "group",
+      members: ["我 (You)", "Alex", "Ben", "Chris"],
+      records: []
     }
   ];
 
-  let sheets = JSON.parse(localStorage.getItem('duotab_multisheets_v4') || 'null');
+  let sheets = JSON.parse(localStorage.getItem('duotab_multisheets_v5') || 'null');
   if (!sheets || sheets.length === 0) {
     sheets = defaultSheets;
-    localStorage.setItem('duotab_multisheets_v4', JSON.stringify(sheets));
+    localStorage.setItem('duotab_multisheets_v5', JSON.stringify(sheets));
   }
 
-  let activeSheetId = localStorage.getItem('duotab_active_sheet_id_v4') || sheets[0].id;
+  let activeSheetId = localStorage.getItem('duotab_active_sheet_id_v5') || sheets[0].id;
+  let syncRoomCode = localStorage.getItem('duotab_sync_room_code') || '';
   let currentAmount = "";
   let selectedPayer = "";
-  let selectedParticipants = []; // who participates in the current pending bill
+  let selectedParticipants = [];
   let activeDashboard = "split";
+  let isUpdatingFromRemote = false;
 
   const categories = [
     { name: "午餐 🍜", label: "午餐", icon: "🍜" },
@@ -655,8 +729,85 @@
   }
 
   function saveSheets() {
-    localStorage.setItem('duotab_multisheets_v4', JSON.stringify(sheets));
-    localStorage.setItem('duotab_active_sheet_id_v4', activeSheetId);
+    localStorage.setItem('duotab_multisheets_v5', JSON.stringify(sheets));
+    localStorage.setItem('duotab_active_sheet_id_v5', activeSheetId);
+
+    // Push to Firebase Realtime Database if connected
+    if (db && syncRoomCode && !isUpdatingFromRemote) {
+      db.ref('rooms/' + syncRoomCode + '/sheets').set(sheets).catch(e => {
+        console.error("Cloud push failed:", e);
+      });
+    }
+  }
+
+  // Cloud Sync Listener
+  function startCloudSync(code) {
+    if (!db || !code) return;
+    const roomRef = db.ref('rooms/' + code + '/sheets');
+    roomRef.on('value', snapshot => {
+      const remoteData = snapshot.val();
+      if (remoteData && Array.isArray(remoteData) && remoteData.length > 0) {
+        isUpdatingFromRemote = true;
+        sheets = remoteData;
+        localStorage.setItem('duotab_multisheets_v5', JSON.stringify(sheets));
+        render();
+        isUpdatingFromRemote = false;
+        showToast('🔄 雲端已即時同步更新');
+      }
+    });
+
+    updateSyncButtonState(true, code);
+  }
+
+  function updateSyncButtonState(connected, code) {
+    const btn = document.getElementById('syncStatusBtn');
+    const dot = document.getElementById('syncDot');
+    const lbl = document.getElementById('syncLabel');
+
+    if (connected && code) {
+      btn.className = "sync-status-btn connected";
+      dot.innerText = "🟢";
+      lbl.innerText = code;
+    } else {
+      btn.className = "sync-status-btn";
+      dot.innerText = "☁️";
+      lbl.innerText = "雲端未同步";
+    }
+  }
+
+  function connectCloudSync() {
+    const input = document.getElementById('roomCodeInput');
+    const code = input.value.trim().toLowerCase();
+    if (!code) {
+      showToast('請輸入房間代碼');
+      return;
+    }
+    syncRoomCode = code;
+    localStorage.setItem('duotab_sync_room_code', code);
+    
+    // First push current data to initialize room if not present
+    if (db) {
+      db.ref('rooms/' + code + '/sheets').once('value').then(snap => {
+        if (!snap.exists()) {
+          db.ref('rooms/' + code + '/sheets').set(sheets);
+        }
+      });
+    }
+
+    startCloudSync(code);
+    closeModals();
+    showToast(`已連線房間：${code} 🎉 另一半輸入同代碼即可同步！`);
+  }
+
+  function disconnectSync() {
+    if (db && syncRoomCode) {
+      db.ref('rooms/' + syncRoomCode + '/sheets').off();
+    }
+    syncRoomCode = '';
+    localStorage.removeItem('duotab_sync_room_code');
+    updateSyncButtonState(false, '');
+    closeModals();
+    showToast('已關閉雲端同步，目前為本地模式');
   }
 
   function triggerHaptic() {
@@ -667,7 +818,7 @@
     const t = document.getElementById('toast');
     t.innerText = msg;
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2000);
+    setTimeout(() => t.classList.remove('show'), 2200);
   }
 
   function switchDashboardView(view) {
@@ -754,7 +905,7 @@
       icon: cat.icon,
       amount: val,
       payer: selectedPayer || sheet.members[0],
-      participants: [...selectedParticipants], // snapshot of who participated!
+      participants: [...selectedParticipants],
       date: new Date().toLocaleDateString('zh-HK', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
 
@@ -773,7 +924,6 @@
     render();
   }
 
-  // Multi-user Debt / Split Algorithm with dynamic attendees
   function calculateGroupBalances(sheet) {
     const members = sheet.members;
     const netMap = {};
@@ -832,7 +982,6 @@
       document.getElementById('cardPnL').style.display = 'none';
     }
 
-    // 1. Payer selection chips
     if (!selectedPayer || !sheet.members.includes(selectedPayer)) {
       selectedPayer = sheet.members[0];
     }
@@ -850,13 +999,11 @@
       pScroll.appendChild(chip);
     });
 
-    // 2. Default all members as participants if empty
     if (selectedParticipants.length === 0 || !selectedParticipants.every(p => sheet.members.includes(p))) {
       selectedParticipants = [...sheet.members];
     }
     renderParticipantsBar();
 
-    // 3. Debts & Settlement
     const { debts, netMap } = calculateGroupBalances(sheet);
     const bTitle = document.getElementById('balanceText');
     const dList = document.getElementById('groupDebtList');
@@ -888,7 +1035,9 @@
       });
     }
 
-    // 4. Activity List
+    const totalExp = sheet.records.reduce((sum, r) => sum + r.amount, 0);
+    document.getElementById('pnlExpenseText').innerText = "HK$ " + totalExp.toLocaleString();
+
     const aList = document.getElementById('activityList');
     aList.innerHTML = '';
     document.getElementById('countText').innerText = sheet.records.length + ' 筆';
@@ -1000,12 +1149,18 @@
       row.style.padding = '6px 10px';
       row.innerHTML = `
         <span style="font-size:12px; font-weight:600;">${m}</span>
-        ${sheet.members.length > 2 ? `<button onclick=\"removeMember(${idx})\" style=\"background:none; border:none; color:var(--rose); font-size:12px; cursor:pointer;\">退出/移除</button>` : ''}
+        ${sheet.members.length > 2 ? `<button onclick="removeMember(${idx})" style="background:none; border:none; color:var(--rose); font-size:12px; cursor:pointer;">退出/移除</button>` : ''}
       `;
       container.appendChild(row);
     });
 
     document.getElementById('membersModal').classList.add('open');
+  }
+
+  function openSyncModal() {
+    triggerHaptic();
+    document.getElementById('roomCodeInput').value = syncRoomCode;
+    document.getElementById('syncModal').classList.add('open');
   }
 
   function addMember() {
@@ -1036,6 +1191,13 @@
 
   function closeModals() {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+  }
+
+  // Auto connect if room code was saved previously
+  if (syncRoomCode) {
+    startCloudSync(syncRoomCode);
+  } else {
+    updateSyncButtonState(false, '');
   }
 
   if ('serviceWorker' in navigator) {
