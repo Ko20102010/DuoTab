@@ -508,7 +508,8 @@
         <span id="syncLabel">雲端未同步</span>
       </button>
     </div>
-    <button class="manage-btn" onclick="openManageMembersModal()" title="成員管理">👥</button>
+    <div style="display:flex; align-items:center; gap:6px;"><span id="streakBadge" style="font-size:11px; font-weight:700; color:var(--orange); background:rgba(245,158,11,0.12); padding:3px 8px; border-radius:12px; border:1px solid rgba(245,158,11,0.3);">🔥 1天</span><button class="manage-btn" onclick="openRecurringModal()" title="週期自動化">📅</button>
+      <button class="manage-btn" onclick="openManageMembersModal()" title="成員管理">👥</button></div>
   </header>
 
   <div class="view-switcher" id="coupleViewSwitcher">
@@ -554,16 +555,34 @@
       <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">淨儲蓄結餘</span>
       <span style="font-size: 13px; font-weight: 800; color: var(--green);" id="pnlNetText">+HK$ 0</span>
     </div>
+
+    <!-- Monthly Budget Bar (Learned from Simple Expense) -->
+    <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <span style="font-size:10px; font-weight:700; color:var(--text-muted);">本月開銷預算：<span id="budgetDisplayVal" style="color:var(--text-main); text-decoration:underline; cursor:pointer;" onclick="editMonthlyBudget()">HK$ 15,000 ✎</span></span>
+        <span id="budgetPaceStatus" style="font-size:10px; font-weight:700; color:var(--green);">進度健康 🟢</span>
+      </div>
+      <div style="height:6px; background:var(--card-subtle); border-radius:4px; overflow:hidden; margin-bottom:4px;">
+        <div id="budgetProgressBar" style="height:100%; width:0%; background:var(--green); border-radius:4px; transition:width 0.3s ease;"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted);">
+        <span id="budgetUsedPct">已用 0%</span>
+        <span id="budgetDailyAdvice">建議每日可用：HK$ --</span>
+      </div>
+    </div>
   </div>
 
   <div class="section-title">
     <span>本帳本記錄</span>
-    <span id="countText" style="font-size: 10px; color: var(--text-muted);">0 筆</span>
+    <div>
+      <button onclick="openAllCategoriesModal()" style="background:var(--card-subtle); border:1px solid var(--border); color:var(--accent-light); font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; cursor:pointer; margin-right:6px;">🏷️ 全部分類/補記</button>
+      <span id="countText" style="font-size: 10px; color: var(--text-muted);">0 筆</span>
+    </div>
   </div>
   
   <div class="activity-list" id="activityList"></div>
 
-  <!-- Payer & Participant Selection Bars -->
+  <!-- Payer, Participant & Payment Method Selection Bars -->
   <div class="selector-block">
     <div class="selector-row">
       <div class="selector-lbl">誰付錢：</div>
@@ -572,6 +591,15 @@
     <div class="selector-row">
       <div class="selector-lbl">誰分攤：</div>
       <div class="chips-scroll" id="participantScroll"></div>
+    </div>
+    <div class="selector-row" style="margin-top:4px; padding-top:4px; border-top:1px dashed rgba(255,255,255,0.06);">
+      <div class="selector-lbl">支付方式：</div>
+      <div class="chips-scroll" id="paymentMethodScroll">
+        <div class="pill-chip active" id="payMethodCard" onclick="selectPaymentMethod('💳 信用卡')">💳 信用卡</div>
+        <div class="pill-chip" id="payMethodCash" onclick="selectPaymentMethod('💵 現金')">💵 現金</div>
+        <div class="pill-chip" id="payMethodOctopus" onclick="selectPaymentMethod('🐙 八達通')">🐙 八達通</div>
+        <div class="pill-chip" id="payMethodFPS" onclick="selectPaymentMethod('📱 FPS/PayMe')">📱 FPS/PayMe</div>
+      </div>
     </div>
   </div>
 
@@ -669,6 +697,133 @@
     <button class="create-sheet-btn" onclick="connectCloudSync()">🔗 連線並啟用即時同步</button>
     <button class="create-sheet-btn" style="background: var(--card-subtle); margin-top: 6px; color: var(--text-muted);" onclick="copySyncShareInfo()">📋 複製房間碼與密碼給另一半</button>
     <button class="create-sheet-btn" style="background: transparent; border: 1px solid var(--border); margin-top: 6px; color: #64748b; font-size:11px; padding:6px;" onclick="disconnectSync()">斷開連線 (切換回本地模式)</button>
+  </div>
+</div>
+
+
+<!-- Modal 4: All Categories Modal (Never miss morning/lunch choices when logging at night) -->
+<div class="modal-overlay" id="allCategoriesModal">
+  <div class="modal-sheet" style="max-height:80vh; overflow-y:auto;">
+    <div class="modal-title">
+      <span>全部分類 (補記專用) 🏷️</span>
+      <span style="cursor:pointer;" onclick="closeModals()">✕</span>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">
+      晚上補記白天開銷？點選任何分類即可直接記帳：
+    </div>
+    
+    <div style="font-size:11px; font-weight:700; color:var(--accent-light); margin-bottom:6px;">餐饮美食</div>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:12px;">
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('早餐 🥪', '🥪')"><span class="emoji">🥪</span><span>早餐</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('午餐 🍜', '🍜')"><span class="emoji">🍜</span><span>午餐</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('晚餐 🍱', '🍱')"><span class="emoji">🍱</span><span>晚餐</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('手搖 ☕', '☕')"><span class="emoji">☕</span><span>飲品/手搖</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('下午茶 🍰', '🍰')"><span class="emoji">🍰</span><span>下午茶</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('宵夜 🍢', '🍢')"><span class="emoji">🍢</span><span>宵夜/小食</span></button>
+    </div>
+
+    <div style="font-size:11px; font-weight:700; color:var(--green); margin-bottom:6px;">日常與出行</div>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:12px;">
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('超市 🛒', '🛒')"><span class="emoji">🛒</span><span>買餸/超市</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('交通 🚇', '🚇')"><span class="emoji">🚇</span><span>地鐵/巴士</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('的士 🚕', '🚕')"><span class="emoji">🚕</span><span>的士/Uber</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('日用 🏠', '🏠')"><span class="emoji">🏠</span><span>家居水電</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('娛樂 🍿', '🍿')"><span class="emoji">🍿</span><span>電影/玩樂</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('購物 🛍️', '🛍️')"><span class="emoji">🛍️</span><span>服裝購物</span></button>
+    </div>
+
+    <div style="font-size:11px; font-weight:700; color:var(--orange); margin-bottom:6px;">其他專項</div>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;">
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('醫療 💊', '💊')"><span class="emoji">💊</span><span>睇醫生/藥物</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('旅行 ✈️', '✈️')"><span class="emoji">✈️</span><span>出遊/機票</span></button>
+      <button class="key cat" style="height:48px;" onclick="chooseSpecificCat('其他 🏷️', '🏷️')"><span class="emoji">🏷️</span><span>其他開支</span></button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal 5: Edit Record Modal -->
+<div class="modal-overlay" id="editRecordModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span>修改記錄 ✎</span>
+      <span style="cursor:pointer;" onclick="closeModals()">✕</span>
+    </div>
+    <input type="hidden" id="editRecordId" />
+    
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px;">金額 (HKD)：</div>
+    <input type="number" step="0.1" class="new-sheet-input" id="editAmountInput" style="font-size:18px; font-weight:bold; color:var(--green);" />
+
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px;">分類名稱：</div>
+    <input type="text" class="new-sheet-input" id="editCategoryInput" />
+
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px;">付款人：</div>
+    <select class="new-sheet-input" id="editPayerSelect" style="background:var(--card-subtle); color:white;"></select>
+
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px;">支付方式：</div>
+    <select class="new-sheet-input" id="editPayMethodSelect" style="background:var(--card-subtle); color:white;">
+      <option value="💳 信用卡">💳 信用卡</option>
+      <option value="💵 現金">💵 現金</option>
+      <option value="🐙 八達通">🐙 八達通</option>
+      <option value="📱 FPS/PayMe">📱 FPS/PayMe</option>
+    </select>
+
+    <button class="create-sheet-btn" onclick="saveRecordEdit()">💾 儲存修改</button>
+    <button class="create-sheet-btn" style="background:transparent; border:1px solid var(--rose); color:var(--rose); margin-top:6px;" onclick="deleteFromEditModal()">🗑️ 刪除此筆記錄</button>
+  </div>
+</div>
+
+<!-- Modal 6: Recurring Automation Rules Modal -->
+<div class="modal-overlay" id="recurringModal">
+  <div class="modal-sheet" style="max-height:85vh; overflow-y:auto;">
+    <div class="modal-title">
+      <span>📅 週期收支自動化</span>
+      <span style="cursor:pointer;" onclick="closeModals()">✕</span>
+    </div>
+    <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">
+      設定固定薪金（自動入帳）或銷售浮動佣金（到期提醒確認），不再重複手動記帳！
+    </p>
+
+    <div id="recurringRulesList" style="margin-bottom:12px;"></div>
+
+    <div style="border-top:1px solid var(--border); padding-top:10px;">
+      <div style="font-size:11px; font-weight:700; color:var(--accent-light); margin-bottom:6px;">＋ 新增週期規則：</div>
+      <input type="text" class="new-sheet-input" id="newRecurTitle" placeholder="項目名稱 (如：月薪、租金、Netflix)" />
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:6px;">
+        <input type="number" class="new-sheet-input" id="newRecurAmount" placeholder="金額 (HKD)" style="margin-bottom:0;" />
+        <input type="number" min="1" max="31" class="new-sheet-input" id="newRecurDay" placeholder="每月幾號 (1-31)" style="margin-bottom:0;" />
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+        <select class="new-sheet-input" id="newRecurType" style="background:var(--card-subtle); color:white; margin-bottom:0;">
+          <option value="income">收入 (+)</option>
+          <option value="expense">支出 (-)</option>
+        </select>
+        <select class="new-sheet-input" id="newRecurIsVariable" style="background:var(--card-subtle); color:white; margin-bottom:0;">
+          <option value="fixed">固定自動入帳</option>
+          <option value="variable">浮動/佣金 (到期確認)</option>
+        </select>
+      </div>
+
+      <button class="create-sheet-btn" onclick="addRecurringRule()">儲存週期規則</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 7: Payday Prompt Modal (For Variable Salary/Bonus) -->
+<div class="modal-overlay" id="paydayPromptModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span id="promptModalTitle">💼 出糧日確認</span>
+      <span style="cursor:pointer;" onclick="closeModals()">✕</span>
+    </div>
+    <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;" id="promptModalDesc">
+      今天到了預設出糧日！請確認本月實際到帳金額：
+    </p>
+    <input type="hidden" id="promptRuleId" />
+    <input type="number" step="1" class="new-sheet-input" id="promptActualAmount" style="font-size:22px; font-weight:800; color:var(--green);" />
+    <button class="create-sheet-btn" onclick="confirmVariableSalary()">✓ 確認記入本月 PnL</button>
   </div>
 </div>
 
@@ -788,6 +943,7 @@
         sheets = remoteData;
         localStorage.setItem('duotab_multisheets_v5', JSON.stringify(sheets));
         render();
+  setTimeout(evaluateRecurringRules, 800);
         isUpdatingFromRemote = false;
         showToast('🔄 雲端已即時同步更新');
       }
@@ -855,6 +1011,7 @@
           sheets = val.sheets;
           localStorage.setItem('duotab_multisheets_v5', JSON.stringify(sheets));
           render();
+  setTimeout(evaluateRecurringRules, 800);
         }
         showToast('已連線房間：' + code + ' 密碼驗證成功 🎉');
       }
@@ -972,13 +1129,14 @@
     triggerHaptic();
 
     const sheet = getActiveSheet();
-    const cat = categories[idx];
+    const cat = getTimeBasedCategories()[idx];
     const record = {
       id: Date.now(),
       category: cat.name,
       icon: cat.icon,
       amount: val,
       payer: selectedPayer || sheet.members[0],
+      paymentMethod: currentPaymentMethod,
       participants: [...selectedParticipants],
       date: new Date().toLocaleDateString('zh-HK', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
@@ -988,6 +1146,9 @@
     currentAmount = "";
     updateDisplay();
     render();
+  setTimeout(evaluateRecurringRules, 800);
+    updateStreak();
+    renderPaymentMethodChips();
     showToast(`已記帳：HK$ ${val} (${record.participants.length} 人均攤) ✨`);
   }
 
@@ -996,6 +1157,7 @@
     sheet.records = sheet.records.filter(r => r.id !== id);
     saveSheets();
     render();
+  setTimeout(evaluateRecurringRules, 800);
   }
 
   function calculateGroupBalances(sheet) {
@@ -1043,7 +1205,477 @@
     return { debts, netMap };
   }
 
+  
+  
+  let currentPaymentMethod = localStorage.getItem('duotab_default_pay_method') || '💳 信用卡';
+
+  function selectPaymentMethod(method) {
+    triggerHaptic();
+    currentPaymentMethod = method;
+    localStorage.setItem('duotab_default_pay_method', method);
+    renderPaymentMethodChips();
+    showToast('已選擇支付方式：' + method);
+  }
+
+  function renderPaymentMethodChips() {
+    const methods = [
+      { id: 'payMethodCard', name: '💳 信用卡' },
+      { id: 'payMethodCash', name: '💵 現金' },
+      { id: 'payMethodOctopus', name: '🐙 八達通' },
+      { id: 'payMethodFPS', name: '📱 FPS/PayMe' }
+    ];
+    methods.forEach(m => {
+      const el = document.getElementById(m.id);
+      if (el) {
+        if (m.name === currentPaymentMethod) {
+          el.className = 'pill-chip payer-active';
+        } else {
+          el.className = 'pill-chip';
+        }
+      }
+    });
+  }
+
+  function openAllCategoriesModal() {
+    triggerHaptic();
+    document.getElementById('allCategoriesModal').classList.add('open');
+  }
+
+  function chooseSpecificCat(catName, icon) {
+    const val = parseFloat(currentAmount);
+    if (!val || val <= 0) {
+      showToast('請先輸入金額 💸');
+      closeModals();
+      return;
+    }
+    if (selectedParticipants.length === 0) {
+      showToast('請選擇至少一位分攤成員');
+      closeModals();
+      return;
+    }
+    triggerHaptic();
+
+    const sheet = getActiveSheet();
+    const record = {
+      id: Date.now(),
+      category: catName,
+      icon: icon,
+      amount: val,
+      payer: selectedPayer || sheet.members[0],
+      paymentMethod: currentPaymentMethod,
+      participants: [...selectedParticipants],
+      paymentMethod: currentPaymentMethod,
+      date: new Date().toLocaleDateString('zh-HK', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    sheet.records.unshift(record);
+    saveSheets();
+    currentAmount = "";
+    updateDisplay();
+    closeModals();
+    render();
+  setTimeout(evaluateRecurringRules, 800);
+    updateStreak();
+    renderPaymentMethodChips();
+    showToast(`已補記：HK$ ${val} [${catName}] (${currentPaymentMethod}) ✨`);
+  }
+
+  
+  // --- Edit Record Functionality ---
+  let currentEditingRecordId = null;
+
+  function openEditRecordModal(id) {
+    triggerHaptic();
+    const sheet = getActiveSheet();
+    const r = sheet.records.find(item => item.id === id);
+    if (!r) return;
+
+    currentEditingRecordId = id;
+    document.getElementById('editRecordId').value = id;
+    document.getElementById('editAmountInput').value = r.amount;
+    document.getElementById('editCategoryInput').value = r.category;
+    document.getElementById('editPayMethodSelect').value = r.paymentMethod || '💳 信用卡';
+
+    // Populate payers
+    const pSelect = document.getElementById('editPayerSelect');
+    pSelect.innerHTML = '';
+    sheet.members.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.innerText = m;
+      if (m === r.payer) opt.selected = true;
+      pSelect.appendChild(opt);
+    });
+
+    document.getElementById('editRecordModal').classList.add('open');
+  }
+
+  function saveRecordEdit() {
+    triggerHaptic();
+    const sheet = getActiveSheet();
+    const r = sheet.records.find(item => item.id === currentEditingRecordId);
+    if (!r) return;
+
+    const amt = parseFloat(document.getElementById('editAmountInput').value);
+    const cat = document.getElementById('editCategoryInput').value.trim();
+    const payer = document.getElementById('editPayerSelect').value;
+    const method = document.getElementById('editPayMethodSelect').value;
+
+    if (!amt || amt <= 0) {
+      showToast('請輸入有效金額');
+      return;
+    }
+
+    r.amount = amt;
+    if (cat) r.category = cat;
+    r.payer = payer;
+    r.paymentMethod = method;
+
+    saveSheets();
+    closeModals();
+    render();
+  setTimeout(evaluateRecurringRules, 800);
+    showToast('已更新記錄 ✨');
+  }
+
+  function deleteFromEditModal() {
+    triggerHaptic();
+    if (confirm('確定刪除此筆記錄？')) {
+      deleteRecord(currentEditingRecordId);
+      closeModals();
+    }
+  }
+
+  // --- Recurring Rules Engine ---
+  let recurringRules = JSON.parse(localStorage.getItem('duotab_recurring_rules_v1') || '[]');
+
+  function openRecurringModal() {
+    triggerHaptic();
+    renderRecurringRulesList();
+    document.getElementById('recurringModal').classList.add('open');
+  }
+
+  function renderRecurringRulesList() {
+    const list = document.getElementById('recurringRulesList');
+    list.innerHTML = '';
+
+    if (recurringRules.length === 0) {
+      list.innerHTML = '<div style="font-size:11px; color:var(--text-muted); text-align:center; padding:10px;">尚未設定任何週期收支</div>';
+      return;
+    }
+
+    recurringRules.forEach((rule, idx) => {
+      const item = document.createElement('div');
+      item.className = 'sheet-list-item';
+      item.style.padding = '8px 10px';
+      const isInc = rule.type === 'income';
+      const isVar = rule.mode === 'variable';
+
+      item.innerHTML = `
+        <div>
+          <div style="font-size:12px; font-weight:700;">${rule.title} <span style="font-size:10px; color:${isInc ? 'var(--green)' : 'var(--rose)'}">[${isInc ? '收入' : '支出'}]</span></div>
+          <div style="font-size:10px; color:var(--text-muted);">每月 ${rule.day} 號 • HK$ ${rule.amount.toLocaleString()} • ${isVar ? '⚠️ 浮動確認' : '⚡ 自動入帳'}</div>
+        </div>
+        <button onclick="deleteRecurringRule(${idx})" style="background:none; border:none; color:var(--rose); font-size:12px; cursor:pointer;">刪除</button>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  function addRecurringRule() {
+    const title = document.getElementById('newRecurTitle').value.trim();
+    const amt = parseFloat(document.getElementById('newRecurAmount').value);
+    const day = parseInt(document.getElementById('newRecurDay').value);
+    const type = document.getElementById('newRecurType').value;
+    const mode = document.getElementById('newRecurIsVariable').value;
+
+    if (!title || !amt || amt <= 0 || !day || day < 1 || day > 31) {
+      showToast('請完整填寫項目、金額與出糧日期 (1-31)');
+      return;
+    }
+
+    triggerHaptic();
+    recurringRules.push({
+      id: 'rec_' + Date.now(),
+      title: title,
+      amount: amt,
+      day: day,
+      type: type,
+      mode: mode,
+      lastExecutedMonth: '' // track YYYY-MM
+    });
+
+    localStorage.setItem('duotab_recurring_rules_v1', JSON.stringify(recurringRules));
+    document.getElementById('newRecurTitle').value = '';
+    document.getElementById('newRecurAmount').value = '';
+    document.getElementById('newRecurDay').value = '';
+    renderRecurringRulesList();
+    showToast(`已建立週期規則：${title}`);
+  }
+
+  function deleteRecurringRule(idx) {
+    recurringRules.splice(idx, 1);
+    localStorage.setItem('duotab_recurring_rules_v1', JSON.stringify(recurringRules));
+    renderRecurringRulesList();
+  }
+
+  // Auto-evaluation of recurring rules on app load
+  function evaluateRecurringRules() {
+    const now = new Date();
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const todayDay = now.getDate();
+    const sheet = getActiveSheet();
+
+    recurringRules.forEach(rule => {
+      // If it should execute today or has passed this month and wasn't executed
+      if (rule.lastExecutedMonth !== currentMonthStr && todayDay >= rule.day) {
+        if (rule.mode === 'fixed') {
+          // Auto record
+          const record = {
+            id: Date.now() + Math.random(),
+            category: rule.title,
+            icon: rule.type === 'income' ? '💼' : '🏠',
+            type: rule.type,
+            amount: rule.amount,
+            payer: sheet.members[0],
+            paymentMethod: '📱 自動扣帳/出糧',
+            date: new Date().toLocaleDateString('zh-HK', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          };
+          sheet.records.unshift(record);
+          rule.lastExecutedMonth = currentMonthStr;
+          saveSheets();
+          localStorage.setItem('duotab_recurring_rules_v1', JSON.stringify(recurringRules));
+          showToast(`⚡ 週期自動記錄：${rule.title} HK$ ${rule.amount} 已入帳！`);
+        } else {
+          // Variable prompt
+          promptVariableRule(rule, currentMonthStr);
+        }
+      }
+    });
+  }
+
+  function promptVariableRule(rule, monthStr) {
+    document.getElementById('promptModalTitle').innerText = `💼 ${rule.title} 出糧確認`;
+    document.getElementById('promptModalDesc').innerText = `每月 ${rule.day} 號為出糧日！預設金額 HK$ ${rule.amount.toLocaleString()}，本月實際到帳多少？`;
+    document.getElementById('promptRuleId').value = rule.id;
+    document.getElementById('promptActualAmount').value = rule.amount;
+    document.getElementById('paydayPromptModal').classList.add('open');
+  }
+
+  function confirmVariableSalary() {
+    const ruleId = document.getElementById('promptRuleId').value;
+    const actualAmt = parseFloat(document.getElementById('promptActualAmount').value);
+    const rule = recurringRules.find(r => r.id === ruleId);
+    if (!rule || !actualAmt || actualAmt <= 0) return;
+
+    triggerHaptic();
+    const now = new Date();
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const sheet = getActiveSheet();
+
+    const record = {
+      id: Date.now(),
+      category: rule.title + (actualAmt !== rule.amount ? ' (含佣金/Bonus)' : ''),
+      icon: '💼',
+      type: rule.type,
+      amount: actualAmt,
+      payer: sheet.members[0],
+      paymentMethod: '📱 銀行轉帳',
+      date: new Date().toLocaleDateString('zh-HK', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    sheet.records.unshift(record);
+    rule.lastExecutedMonth = currentMonthStr;
+    saveSheets();
+    localStorage.setItem('duotab_recurring_rules_v1', JSON.stringify(recurringRules));
+    closeModals();
+    render();
+  setTimeout(evaluateRecurringRules, 800);
+    showToast(`✓ 已記錄：${rule.title} 實際 HK$ ${actualAmt.toLocaleString()} 入帳！`);
+  }
+
+  // --- Smart Time-based Categories (Learned from Fortune City) ---
+  function getTimeBasedCategories() {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 11) {
+      return [
+        { name: "早餐 🥪", label: "早餐", icon: "🥪" },
+        { name: "咖啡 ☕", label: "咖啡", icon: "☕" },
+        { name: "交通 🚇", label: "交通", icon: "🚇" },
+        { name: "超市 🛒", label: "超市", icon: "🛒" }
+      ];
+    } else if (hour >= 11 && hour < 14) {
+      return [
+        { name: "午餐 🍜", label: "午餐", icon: "🍜" },
+        { name: "手搖 ☕", label: "飲品", icon: "☕" },
+        { name: "零食 🍪", label: "零食", icon: "🍪" },
+        { name: "交通 🚇", label: "交通", icon: "🚇" }
+      ];
+    } else if (hour >= 14 && hour < 17) {
+      return [
+        { name: "下午茶 🍰", label: "下午茶", icon: "🍰" },
+        { name: "手搖 ☕", label: "飲品", icon: "☕" },
+        { name: "超市 🛒", label: "買餸", icon: "🛒" },
+        { name: "交通 🚇", label: "交通", icon: "🚇" }
+      ];
+    } else if (hour >= 17 && hour < 22) {
+      return [
+        { name: "晚餐 🍱", label: "晚餐", icon: "🍱" },
+        { name: "買餸 🛒", label: "買餸", icon: "🛒" },
+        { name: "娛樂 🍿", label: "娛樂", icon: "🍿" },
+        { name: "手搖 ☕", label: "飲品", icon: "☕" }
+      ];
+    } else {
+      return [
+        { name: "宵夜 🍢", label: "宵夜", icon: "🍢" },
+        { name: "酒水 🍻", label: "酒水", icon: "🍻" },
+        { name: "的士 🚕", label: "交通", icon: "🚕" },
+        { name: "娛樂 🎮", label: "娛樂", icon: "🎮" }
+      ];
+    }
+  }
+
+  // --- Streak Tracker (Learned from Fortune City) ---
+  function updateStreak() {
+    const today = new Date().toISOString().split('T')[0];
+    let dates = JSON.parse(localStorage.getItem('duotab_logged_dates') || '[]');
+    if (!dates.includes(today)) {
+      dates.push(today);
+      dates.sort();
+      localStorage.setItem('duotab_logged_dates', JSON.stringify(dates));
+    }
+
+    // Calculate consecutive days
+    let streak = 0;
+    let checkDate = new Date();
+    while (true) {
+      const dStr = checkDate.toISOString().split('T')[0];
+      if (dates.includes(dStr)) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    const streakEl = document.getElementById('streakBadge');
+    if (streakEl) streakEl.innerText = `🔥 ${Math.max(1, streak)}天連記`;
+  }
+
+  // --- Monthly Budget (Learned from Simple Expense) ---
+  function editMonthlyBudget() {
+    const sheet = getActiveSheet();
+    const current = sheet.monthlyBudget || 15000;
+    const val = prompt('請輸入本月共同開銷預算 (HKD):', current);
+    if (val && !isNaN(val) && parseFloat(val) > 0) {
+      sheet.monthlyBudget = parseFloat(val);
+      saveSheets();
+      render();
+  setTimeout(evaluateRecurringRules, 800);
+      showToast('已更新本月預算為 HK$ ' + sheet.monthlyBudget.toLocaleString());
+    }
+  }
+
+  // --- Pure JS Confetti Celebration (Learned from Fortune City) ---
+  function fireConfetti() {
+    const canvas = document.getElementById('confettiCanvas');
+    if (!canvas) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+
+    const particles = [];
+    const colors = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#3b82f6'];
+
+    for (let i = 0; i < 70; i++) {
+      particles.push({
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        w: Math.random() * 8 + 4,
+        h: Math.random() * 6 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 12,
+        vy: (Math.random() - 0.7) * 14,
+        gravity: 0.35,
+        rotation: Math.random() * 360,
+        vr: Math.random() * 10 - 5
+      });
+    }
+
+    let frames = 0;
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.rotation += p.vr;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+
+      frames++;
+      if (frames < 75) {
+        requestAnimationFrame(animate);
+      } else {
+        canvas.style.display = 'none';
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
   function render() {
+
+    // Update Smart Categories based on time of day
+    const dynamicCats = getTimeBasedCategories();
+    for (let i = 0; i < 4; i++) {
+      const btn = document.getElementById('catBtn' + (i + 1));
+      if (btn && dynamicCats[i]) {
+        btn.innerHTML = `<span class="emoji">${dynamicCats[i].icon}</span><span>${dynamicCats[i].label}</span>`;
+      }
+    }
+
+    // Budget Progress calculation
+    const budget = sheet.monthlyBudget || 15000;
+    const bDisplay = document.getElementById('budgetDisplayVal');
+    if (bDisplay) bDisplay.innerText = 'HK$ ' + budget.toLocaleString() + ' ✎';
+    const bPct = Math.min(100, (totalExp / budget) * 100);
+    const bBar = document.getElementById('budgetProgressBar');
+    if (bBar) {
+      bBar.style.width = bPct + '%';
+      if (bPct >= 100) bBar.style.background = 'var(--rose)';
+      else if (bPct >= 75) bBar.style.background = 'var(--orange)';
+      else bBar.style.background = 'var(--green)';
+    }
+    const bPctText = document.getElementById('budgetUsedPct');
+    if (bPctText) bPctText.innerText = `已用 ${bPct.toFixed(0)}% (HK$ ${totalExp.toFixed(0)})`;
+
+    // Days left in current month
+    const now = new Date();
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const daysLeft = Math.max(1, lastDay - now.getDate());
+    const remainingBudget = Math.max(0, budget - totalExp);
+    const dailyAdvice = Math.round(remainingBudget / daysLeft);
+    const bDaily = document.getElementById('budgetDailyAdvice');
+    if (bDaily) {
+      bDaily.innerText = remainingBudget > 0 ? `剩餘 ${daysLeft} 天 • 每日建議 HK$ ${dailyAdvice}` : '⚠️ 已超支！';
+      bDaily.style.color = remainingBudget > 0 ? 'var(--text-muted)' : 'var(--rose)';
+    }
+    const bStatus = document.getElementById('budgetPaceStatus');
+    if (bStatus) {
+      if (bPct >= 100) { bStatus.innerText = '超支預警 ⚠️'; bStatus.style.color = 'var(--rose)'; }
+      else if (bPct >= 75) { bStatus.innerText = '花費偏高 🟠'; bStatus.style.color = 'var(--orange)'; }
+      else { bStatus.innerText = '進度健康 🟢'; bStatus.style.color = 'var(--green)'; }
+    }
+
+    updateStreak();
+    renderPaymentMethodChips();
+
     const sheet = getActiveSheet();
     document.getElementById('currentSheetIcon').innerText = sheet.icon || "📑";
     document.getElementById('currentSheetName').innerText = sheet.name;
@@ -1069,6 +1701,7 @@
         triggerHaptic();
         selectedPayer = m;
         render();
+  setTimeout(evaluateRecurringRules, 800);
       };
       pScroll.appendChild(chip);
     });
@@ -1125,11 +1758,11 @@
         div.className = 'activity-item';
         div.innerHTML = `
           <div class="item-icon">${r.icon}</div>
-          <div class="item-details">
-            <div class="item-name">${r.category} <span style="font-size:10px; color:var(--accent-light);">(${partsCount}人分)</span></div>
-            <div class="item-sub">${r.date} • ${r.payer} 付款</div>
+          <div class="item-details" style="cursor:pointer;" onclick="openEditRecordModal(${r.id})">
+            <div class="item-name">${r.category} <span style="font-size:10px; color:var(--accent-light);">(${partsCount}人分) ✎</span></div>
+            <div class="item-sub">${r.date} • ${r.payer} 付款 • <span style="color:var(--accent-light);">${r.paymentMethod || "💳 信用卡"}</span></div>
           </div>
-          <div class="item-amount">-HK$ ${r.amount.toFixed(1)}</div>
+          <div class="item-amount" style="cursor:pointer;" onclick="openEditRecordModal(${r.id})">${r.type === 'income' ? '+' : '-'}HK$ ${r.amount.toFixed(1)}</div>
           <button class="del-btn" onclick="deleteRecord(${r.id})">✕</button>
         `;
         aList.appendChild(div);
@@ -1143,6 +1776,7 @@
     const { debts } = calculateGroupBalances(sheet);
     let msg = `【${sheet.name} 結算備忘】\n`;
 
+    fireConfetti();
     if (debts.length === 0) {
       msg += "目前所有人帳目已結清 ✨";
     } else {
@@ -1180,6 +1814,7 @@
         saveSheets();
         closeModals();
         render();
+  setTimeout(evaluateRecurringRules, 800);
       };
       container.appendChild(item);
     });
@@ -1208,6 +1843,7 @@
     input.value = "";
     closeModals();
     render();
+  setTimeout(evaluateRecurringRules, 800);
     showToast(`已建立新帳本：${name} 🎉`);
   }
 
@@ -1253,6 +1889,7 @@
     input.value = '';
     openManageMembersModal();
     render();
+  setTimeout(evaluateRecurringRules, 800);
   }
 
   function removeMember(idx) {
@@ -1262,6 +1899,7 @@
     saveSheets();
     openManageMembersModal();
     render();
+  setTimeout(evaluateRecurringRules, 800);
   }
 
   function closeModals() {
@@ -1282,7 +1920,10 @@
   }
 
   render();
+  setTimeout(evaluateRecurringRules, 800);
 </script>
 
+
+<canvas id="confettiCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:999; display:none;"></canvas>
 </body>
 </html>
